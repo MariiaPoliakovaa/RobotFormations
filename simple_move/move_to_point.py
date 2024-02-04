@@ -1,25 +1,35 @@
 import rclpy
+import sys
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 import math
 
 class TurtlebotController:
-    def __init__(self):
+    def __init__(self, robot_num):
         rclpy.init()
-        self.node = rclpy.create_node('turtlebot_controller')
+        self.node = rclpy.create_node("turtlebot_controller_{}".format(robot_num))
 
         # Create a publisher for the /cmd_vel topic
-        self.publisher = self.node.create_publisher(Twist, '/cmd_vel', 10)
+        self.publisher = self.node.create_publisher(
+            Twist,
+            '/tb{}/cmd_vel'.format(robot_num),
+            10
+        )
 
         # Create a subscriber for the /odom topic
-        self.subscriber = self.node.create_subscription(Odometry, '/odom', self.odom_callback, 10)
+        self.subscriber = self.node.create_subscription(
+            Odometry,
+            '/tb{}/odom'.format(robot_num),
+            self.odom_callback,
+            10
+        )
 
         # Initialize the Twist message for controlling velocity
         self.twist_msg = Twist()
 
-        # Set the target position
-        self.target_x = 2.0  # Set your desired x-coordinate
-        self.target_y = 2.0  # Set your desired y-coordinate
+        # Initialize target 
+        self.target_x = None
+        self.target_y = None
         self.distance_threshold = 0.1  # Set a distance threshold for stopping the TurtleBot
 
     def odom_callback(self, msg):
@@ -47,11 +57,16 @@ class TurtlebotController:
             self.twist_msg.angular.z = 0.0
             self.publisher.publish(self.twist_msg)
 
-    def run(self):
+    def run(self, x, y):
+        # set goal
+        self.target_x = x  # Set desired x-coordinate
+        self.target_y = y  # Set desired y-coordinate
+
         try:
             rclpy.spin(self.node)
         except KeyboardInterrupt:
             pass
+
 
         # Stop the TurtleBot when the script is terminated
         self.twist_msg.linear.x = 0.0
@@ -62,6 +77,13 @@ class TurtlebotController:
         rclpy.shutdown()
 
 if __name__ == '__main__':
-    controller = TurtlebotController()
-    controller.run()
+    robot_num = int(sys.argv[1])
+    goal_x = int(sys.argv[2])
+    goal_y = int(sys.argv[3])
+
+    print("Controlling turtlebot No. {}".format(robot_num))
+    print("Target position: ({}/{})".format(goal_x, goal_y))
+
+    controller = TurtlebotController(robot_num)
+    controller.run(goal_x, goal_y)
 

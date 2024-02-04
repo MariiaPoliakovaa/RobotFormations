@@ -1,12 +1,13 @@
 import rclpy
+import sys
 from geometry_msgs.msg import Twist
 
-def move_turtlebot():
+def move_turtlebot(robot_num: int):
     rclpy.init()
     node = rclpy.create_node('turtlebot_controller')
 
     # Create a publisher for the /cmd_vel topic
-    publisher = node.create_publisher(Twist, '/cmd_vel', 10)
+    publisher = node.create_publisher(Twist, '/tb0/cmd_vel', 10)
 
     # Create a Twist message
     twist_msg = Twist()
@@ -33,5 +34,6 @@ def move_turtlebot():
     rclpy.shutdown()
 
 if __name__ == '__main__':
-    move_turtlebot()
+    #robot_num = sys.argv[1]
+    move_turtlebot(0)
 
