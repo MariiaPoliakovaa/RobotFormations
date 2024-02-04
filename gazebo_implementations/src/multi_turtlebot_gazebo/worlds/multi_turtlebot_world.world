@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<sdf version="1.7">
+  <world name="default">
+    <!-- Include the TurtleBot3 model -->
+    <include>
+      <uri>model://turtlebot3_burger</uri>
+    </include>
+    
+    <!-- Set initial pose for the first TurtleBot3 -->
+    <model name="turtlebot3_1">
+      <pose>-2 0 0 0 0 0</pose>
+    </model>
+    
+    <!-- Set initial pose for the second TurtleBot3 -->
+    <model name="turtlebot3_2">
+      <pose>2 0 0 0 0 0</pose>
+    </model>
+  </world>
+</sdf>
