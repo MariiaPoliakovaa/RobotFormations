@@ -34,6 +34,9 @@ class Robot:
     def set_priority(self, priority: int):
         self.priority = priority
 
+    def __repr__(self):
+        return "Robot prio: {}, position: {}".format(self.priority, self.position)
+
 
 def random_robots(n: int, x_min, x_max, y_min, y_max) -> List[Robot]:
     """
