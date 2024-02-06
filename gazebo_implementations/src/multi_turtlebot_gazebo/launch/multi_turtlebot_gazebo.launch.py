@@ -15,68 +15,7 @@ custom_models_path = "/home/mariia/Documents/Masterarbeit/Implementation_example
 world_path = '/home/mariia/Documents/Masterarbeit/Implementation_example/gazebo_implementations/src/multi_turtlebot_gazebo/worlds/empty.world'
 
 
-"""
-def generate_robots(n: int) -> List[Node]:
-    # Remapping is required for state publisher otherwise /tf and /tf_static will get be published on root '/' namespace
-    remappings = [("/tf", "tf"), ("/tf_static", "tf_static")]
-
-    for i in range(n):
-        name = 'turtlebot_' + str(i)
-
-        # Create state publisher node for that instance
-        turtlebot_state_publisher = Node(
-            package="robot_state_publisher",
-            namespace=namespace,
-            executable="robot_state_publisher",
-            output="screen",
-            parameters=[{"use_sim_time": False,
-                         "publish_frequency": 10.0}],
-            remappings=remappings,
-            arguments=[urdf],
-        )
-
-        return robots
-
 def generate_launch_description():
-    ld = LaunchDescription([
-        # Set logging level
-        DeclareLaunchArgument(
-            'log_level',
-            default_value='debug',
-            description='Set the ROS log level (debug, info, warn, error, fatal)'
-        ),
-
-        # Set path to models
-        DeclareLaunchArgument(
-            'model_path',
-            default_value=custom_models_path,
-            description='Path to the directory containing the TurtleBot3 model'
-        ),
-
-        # Launch Gazebo
-        Node(
-            package='gazebo_ros',
-            executable='/usr/bin/gazebo',
-            name='gazebo',
-            output='screen',
-            arguments=[
-                '-s', 'libgazebo_ros_init.so',
-                '-s', 'libgazebo_ros_factory.so',
-                '--verbose',
-                world_path
-            ],
-        ),
-    ])
-    robots = generate_robots(1)
-    ld.add_action(*robots)
-
-    return ld
-"""
-
-
-
-def generate_launch_description():
-    num_robots = 2
 
     ld = LaunchDescription()
 
@@ -101,20 +40,6 @@ def generate_launch_description():
         multi_turtlebot_gazebo, "urdf", urdf_file_name
     )
 
-    """
-    gzserver_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(get_package_share_directory("gazebo_ros"), "launch", "gzserver.launch.py")
-        ),
-        launch_arguments={"world": world}.items(),
-    )
-
-    gzclient_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(get_package_share_directory("gazebo_ros"), "launch", "gzclient.launch.py")
-        ),
-    )
-    """
     gazebo = Node(
         package='gazebo_ros',
         executable='/usr/bin/gazebo',
@@ -129,8 +54,6 @@ def generate_launch_description():
     )
 
     ld.add_action(declare_enable_drive)
-    #ld.add_action(gzserver_cmd)
-    #ld.add_action(gzclient_cmd)
     ld.add_action(gazebo)
 
     last_action = None
@@ -139,10 +62,11 @@ def generate_launch_description():
     remappings = [("/tf", "tf"), ("/tf_static", "tf_static")]
 
     # Spawn turtlebot3 instances in gazebo
-    for i in range(num_robots):
+    robots = ['Tony', 'Jacky']
+    for i, robot in enumerate(robots):
         # Construct a unique name and namespace
-        name = "turtlebot" + str(i)
-        namespace = "/tb" + str(i)
+        name = robot
+        namespace = robot
 
         # Create state publisher node for that instance
         turtlebot_state_publisher = Node(
