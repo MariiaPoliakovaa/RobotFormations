@@ -6,6 +6,8 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 
+from .point import Point
+
 class TurtlebotController(Node):
     def __init__(self, robot_name):
         super().__init__("{}_controller".format(robot_name))
@@ -24,12 +26,10 @@ class TurtlebotController(Node):
         )
 
         # Coordinates of turtlebot
-        self.x = None
-        self.y = None
+        self.position = Point(None, None)
 
         # target coordinates
-        self.target_x = -2.0  # Set your target x-coordinate here
-        self.target_y = -2.0  # Set your target y-coordinate here
+        self.target = Point(2, -2)
 
         self.angular_speed = 0.5
         self.linear_speed = 0.2  # Adjust the linear speed as needed
@@ -39,19 +39,16 @@ class TurtlebotController(Node):
 
 
     def get_position(self):
-        return self.x, self.y
+        return self.position
 
 
     def odometry_callback(self, odom_msg):
         # extract turtlebot coordinates
-        self.x = odom_msg.pose.pose.position.x
-        self.y = odom_msg.pose.pose.position.y
+        self.position.x = odom_msg.pose.pose.position.x
+        self.position.y = odom_msg.pose.pose.position.y
 
         # calculate distance to target
-        distance_to_target = np.sqrt(
-            (self.target_x - self.x)**2 +
-            (self.target_y - self.y)**2
-        )
+        distance_to_target = self.position.distance_to(self.target)
 
         # initialize twist message
         twist_msg = Twist()
@@ -82,8 +79,8 @@ class TurtlebotController(Node):
         """
         # get angle to target
         angle_to_target = math.atan2(
-            self.target_y - self.y,
-            self.target_x - self.x
+            self.target.y - self.position.y,
+            self.target.x - self.position.x
         )
 
         # get current orientation
