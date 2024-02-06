@@ -28,14 +28,18 @@ class TurtlebotController(Node):
         # Coordinates of turtlebot
         self.position = Point(None, None)
 
-        # target coordinates
-        self.target = Point(2, -2)
+        # Initialize target as None
+        self.target = None
 
         self.angular_speed = 0.5
         self.linear_speed = 0.2  # Adjust the linear speed as needed
 
         self.angle_threshold = 0.1
         self.distance_threshold = 0.1
+
+
+    def set_target(self, target: Point):
+        self.target = target
 
 
     def get_position(self):
@@ -53,8 +57,8 @@ class TurtlebotController(Node):
         # initialize twist message
         twist_msg = Twist()
 
-        # move turtlebot if it has not reached target
-        if distance_to_target > self.distance_threshold:
+        # move turtlebot if it has not reached target and if target is set
+        if (distance_to_target > self.distance_threshold) and (self.target is not None):
 
             # rotate the robot towards the target
             twist_msg, correctly_oriented = self.rotate_to_target(odom_msg, twist_msg)
@@ -129,8 +133,13 @@ class TurtlebotController(Node):
 
 
 def main():
+    target = Point(-2, 2)
+
     rclpy.init()
+
     move_turtlebot = TurtlebotController('Tony')
+    move_turtlebot.set_target(target)
+
     rclpy.spin(move_turtlebot)
     move_turtlebot.destroy_node()
     rclpy.shutdown()
