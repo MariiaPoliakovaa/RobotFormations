@@ -21,11 +21,15 @@ class Point:
     def __repr__(self):
         return "({:.2f}, {:.2f})".format(self.x, self.y)
 
+    def __str__(self):
+        return "({:.2f}, {:.2f})".format(self.x, self.y)
+
 
 class Turtlebot:
     def __init__(self, name: str, max_angular_speed: float, max_linear_speed: float):
         self.name = name
-        self.position = Point(None, None)
+        self.position = None
+        self.priority = None
         self.target = None
         self.run = False
 
@@ -40,10 +44,11 @@ class Turtlebot:
     def set_target(self, target: Point):
         self.target = target
 
-
     def start_moving(self):
         self.run = True
 
+    def set_priority(self, prio: float):
+        self.priority = prio
 
     def stop_moving(self):
         self.run = False

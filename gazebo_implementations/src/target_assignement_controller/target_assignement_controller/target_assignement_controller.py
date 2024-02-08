@@ -1,4 +1,5 @@
 import rclpy
+import time
 
 from copy import deepcopy
 
@@ -12,6 +13,7 @@ from geometry_msgs.msg import Twist
 from typing import List, Dict
 
 from .turtlebot import Turtlebot, Point
+from .target_assignement import target_assignement_strategy
 
 
 class TargetAssignementController(Node):
@@ -19,20 +21,55 @@ class TargetAssignementController(Node):
         super().__init__("target_assignement_controller")
         max_angular_speed = 0.5
         max_linear_speed = 0.5
+        self.targets_set = False
+        self.targets = targets
 
+        # init turtlebot objects
         self.robot_names = robot_names
         self.robots = {name: Turtlebot(name,
                                        max_angular_speed,
                                        max_linear_speed)
                        for name in robot_names}
 
+        # init subscriptions and publishers
         self.odom_subscriptions = self.init_subscriptions(robot_names)
         self.twist_publishers = self.init_twist_publishers(robot_names)
 
-        # this is just to initially test shit
-        for robot_name, target in zip(robot_names, targets):
-            robot = self.robots[robot_name]
-            robot.target = target
+
+    def all_positions_set(self):
+        """
+        Returns True if all turtlebots have their
+        positions set, else False
+        """
+        positions_set = True
+        for robot in self.robots.values():
+            if robot.position is None:
+                positions_set = False
+        return positions_set
+
+
+    def assign_targets_prios(self, targets: List[Point]):
+        """
+        Use Use target assignement startegy to assign
+        targets to the turtlebots
+        """
+        # get all the turtlebots
+        turtlebots = list(self.robots.values())
+
+        # assign targets to the turtlebots
+        prio_direction = 'increasing'
+        turtlebots_assigned = target_assignement_strategy(
+            turtlebots,
+            targets,
+            prio_direction
+        )
+
+        # reshape into dictionary
+        turtlebots_assigned = {robot.name: robot for
+                              robot in turtlebots_assigned}
+
+        return turtlebots_assigned
+
 
     def init_twist_publishers(self, robot_names: List[str]) -> Dict[str, Publisher]:
         """
@@ -82,6 +119,12 @@ class TargetAssignementController(Node):
         Odometry callback to receive pose from the turtlebot and
         send a twist message based on the turtlebots state
         """
+        # if positions are not yet assigned and all robot positions were
+        # received
+        if not self.targets_set and self.all_positions_set():
+            self.robots = self.assign_targets_prios(self.targets)
+            self.targets_set = True
+
         # get the robot
         robot = self.robots[robot_name]
 
@@ -89,8 +132,10 @@ class TargetAssignementController(Node):
         twist_publisher = self.twist_publishers[robot_name]
 
         # read robot positions
-        robot.position.x = odom_msg.pose.pose.position.x
-        robot.position.y = odom_msg.pose.pose.position.y
+        robot.position = Point(
+            odom_msg.pose.pose.position.x,
+            odom_msg.pose.pose.position.y
+        )
 
         twist_msg = Twist()
 
