@@ -3,11 +3,13 @@ import rclpy
 from copy import deepcopy
 
 from rclpy.node import Node
+from rclpy.subscription import Subscription
+from rclpy.publisher import Publisher
 from geometry_msgs.msg import Pose
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 
-from typing import List
+from typing import List, Dict
 
 from .turtlebot import Turtlebot, Point
 
@@ -32,10 +34,14 @@ class TargetAssignementController(Node):
             robot = self.robots[robot_name]
             robot.target = target
 
-    def init_twist_publishers(self, robot_names: List[str]):
+    def init_twist_publishers(self, robot_names: List[str]) -> Dict[str, Publisher]:
         """
-        Initializes the /cmd_vel publishers for Twist
-        messages
+        Initializes the Twist message publisher for each
+        turtlebot.
+
+        :param robot_names : List of names of the turtlebots
+        :returns           : Dictionary with the robot names as keys and the
+                             publishers as values
         """
         publishers = {}
         for robot_name in robot_names:
@@ -49,9 +55,14 @@ class TargetAssignementController(Node):
         return publishers
 
 
-    def init_subscriptions(self, robot_names: List[str]):
+    def init_subscriptions(self, robot_names: List[str]) -> Dict[str, Subscription]:
         """
-        Initializes the Odometry subscriptions.
+        Initializes the subscriptions to the odometry message
+        for each turtlebot.
+
+        :param robot_names: List of names of the turtlebots
+        :returns           : Dictionary with the robot names as keys and the
+                             subscriptions as values
         """
         subscriptions = []
         for robot_name in self.robot_names:
@@ -68,7 +79,8 @@ class TargetAssignementController(Node):
 
     def odom_callback(self, odom_msg: Odometry, robot_name: str):
         """
-        Odometry callback to receive pose from robot
+        Odometry callback to receive pose from the turtlebot and
+        send a twist message based on the turtlebots state
         """
         # get the robot
         robot = self.robots[robot_name]
