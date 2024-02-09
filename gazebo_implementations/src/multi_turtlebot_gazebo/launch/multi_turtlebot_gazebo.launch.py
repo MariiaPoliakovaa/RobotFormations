@@ -1,4 +1,5 @@
 import os
+import random
 from launch import LaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -62,11 +63,13 @@ def generate_launch_description():
     remappings = [("/tf", "tf"), ("/tf_static", "tf_static")]
 
     # Spawn turtlebot3 instances in gazebo
-    robots = ['Tony', 'Jacky']
+    robots = ['Tony', 'Jacky', 'Andreas', 'Susan', 'Pikachu']
     for i, robot in enumerate(robots):
         # Construct a unique name and namespace
         name = robot
         namespace = robot
+        x = random.uniform(-3,3)
+        y = random.uniform(-3,3)
 
         # Create state publisher node for that instance
         turtlebot_state_publisher = Node(
@@ -92,9 +95,9 @@ def generate_launch_description():
                 "-robot_namespace",
                 namespace,
                 "-x",
-                str(i),
+                str(x),
                 "-y",
-                str(i),
+                str(y),
                 "-z",
                 "0.01",
                 "-Y",

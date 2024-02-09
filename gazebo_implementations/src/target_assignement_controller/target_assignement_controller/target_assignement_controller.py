@@ -1,5 +1,6 @@
 import rclpy
 import time
+import numpy as np
 
 from copy import deepcopy
 
@@ -26,9 +27,11 @@ class TargetAssignementController(Node):
 
         # init turtlebot objects
         self.robot_names = robot_names
+        deadzone_radius = 0.5 # I need to work out a useful value for this
         self.robots = {name: Turtlebot(name,
                                        max_angular_speed,
-                                       max_linear_speed)
+                                       max_linear_speed,
+                                       deadzone_radius)
                        for name in robot_names}
 
         # init subscriptions and publishers
@@ -114,6 +117,26 @@ class TargetAssignementController(Node):
         return subscriptions
 
 
+    def check_deadzones(self, robot: Turtlebot):
+        """
+        Checks if there is another robot in this
+        robots deadzone.
+        If there is one, the turtlebot with the lower
+        priority is stopped
+        """
+        for other_robot in self.robots.values():
+            if robot.in_deadzone(other_robot) and (robot.name != other_robot.name):
+                self.get_logger().info(f"{other_robot.name} in {robot.name}'s deadzone")
+
+                dist = robot.position.distance_to(other_robot.position)
+                self.get_logger().info(f"distance: {dist}")
+
+                if robot.priority < other_robot.priority:
+                    robot.stop_moving()
+                else:
+                    other_robot.stop_moving()
+
+
     def odom_callback(self, odom_msg: Odometry, robot_name: str):
         """
         Odometry callback to receive pose from the turtlebot and
@@ -145,12 +168,13 @@ class TargetAssignementController(Node):
             # rotate it towards its target
             twist_msg, correctly_oriented = robot.rotate_to_target(odom_msg, twist_msg)
 
-            self.get_logger().info(f'{robot_name} moving: {robot.run}',
-                                   throttle_duration_sec=2)
-
             # if it aim towards its target start moving
             if correctly_oriented:
                 robot.start_moving()
+
+            # check if there is another robot in this robots deadzone
+            # if there is, stop the one with the lower priority
+            self.check_deadzones(robot)
 
             # if the robot is supposed to run and has not reached its target
             if robot.run == True:
@@ -160,19 +184,35 @@ class TargetAssignementController(Node):
         twist_publisher.publish(twist_msg)
 
 
+def circle_positions(n: int, radius: float) -> List[Point]:
+    """
+    Generates evenly spaced points on a circle
+
+    :param n      : number of points
+    :param radius : radius of the circle
+
+    :returns      : List of points on a circle
+    """
+    points = []
+
+    for theta in np.linspace(0, 2*np.pi, n+1):
+        x = radius * np.cos(theta)
+        y = radius * np.sin(theta)
+        points.append(Point(x, y))
+
+    return points[:-1]
 
 
 def main():
     rclpy.init()
 
+    # robot names
+    robots = ['Tony', 'Jacky', 'Andreas', 'Susan', 'Pikachu']
+
     # Initialize target positions
-    target_positions = [
-        Point(3,-3),
-        Point(-3, 3)
-    ]
+    target_positions = circle_positions(len(robots), 0.5)
 
     # Initialize target assignement controller
-    robots = ['Tony', 'Jacky']
     tac = TargetAssignementController(robots, target_positions)
 
     rclpy.spin(tac)

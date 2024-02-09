@@ -26,7 +26,8 @@ class Point:
 
 
 class Turtlebot:
-    def __init__(self, name: str, max_angular_speed: float, max_linear_speed: float):
+    def __init__(self, name: str, max_angular_speed: float,
+                 max_linear_speed: float, deadzone_radius: float):
         self.name = name
         self.position = None
         self.priority = None
@@ -37,6 +38,7 @@ class Turtlebot:
         self.linear_speed = max_linear_speed
         self.angle_threshold = 0.1
         self.distance_threshold = 0.1
+        self.deadzone_radius = deadzone_radius
 
     def reached_target(self):
         return self.position.distance_to(self.target) < self.distance_threshold
@@ -47,11 +49,21 @@ class Turtlebot:
     def start_moving(self):
         self.run = True
 
+    def stop_moving(self):
+        self.run = False
+
     def set_priority(self, prio: float):
         self.priority = prio
 
-    def stop_moving(self):
-        self.run = False
+    def in_deadzone(self, other):
+        """
+        Returns True if another turtlebot is within
+        the deadzone radius, else False
+        """
+        if self.position.distance_to(other.position) < self.deadzone_radius:
+            return True
+        else:
+            return False
 
 
     def rotate_to_target(self, odom_msg, twist_msg):
