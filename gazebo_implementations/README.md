@@ -11,7 +11,13 @@ colcon build --packages-select multi_turtlebot_gazebo
 
 ## Run a package
 In another terminal than the one the package was built in:
+source install/setup.bash
+
+### Multi turtlebot gazebo
 ros2 launch multi_turtlebot_gazebo multi_turtlebot_gazebo.launch.py
+
+### Target assignement strategy
+ros2 run target_assignement_controller target_assignement
 
 
 ## Ideen
