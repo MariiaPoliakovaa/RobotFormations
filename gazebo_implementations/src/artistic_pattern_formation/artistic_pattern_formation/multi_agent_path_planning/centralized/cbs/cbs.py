@@ -307,6 +307,33 @@ class CBS(object):
             plan[agent] = path_dict_list
         return plan
 
+def cbs(robots, robot_goals, dimensions=[4,4], obstacles=None):
+
+    # reshape robots and goals to something like:
+    # [{'start': [0, 0], 'goal': [2, 0], 'name': 'agent0'}, {'start': [2, 0], 'goal': [0, 0], 'name': 'agent1'}]
+    inp = []
+    for robot_name in robots.keys():
+        robot = robots[robot_name]
+
+        robot_pos = [robot.position.x, robot.position.y]
+        robot_goal = robot_goals[robot_name]
+        robot_goal = [robot_goal.x, robot_goal.y]
+        inp.append({
+            'start': robot_pos,
+            'goal': robot_goal,
+            'name': robot_name
+        })
+
+    env = Environment(dimension, agents, obstacles)
+
+    # Searching
+    cbs = CBS(env)
+    solution = cbs.search()
+    if not solution:
+        raise ValueError("No cbs solution found")
+
+    return solution
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -338,6 +365,7 @@ def main():
     output = dict()
     output["schedule"] = solution
     output["cost"] = env.compute_solution_cost(solution)
+    print(output)
     with open(args.output, 'w') as output_yaml:
         yaml.safe_dump(output, output_yaml)
 

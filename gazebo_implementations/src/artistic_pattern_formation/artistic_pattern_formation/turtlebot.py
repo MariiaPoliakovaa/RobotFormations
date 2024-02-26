@@ -39,7 +39,6 @@ class Turtlebot:
         self.linear_speed = max_linear_speed
         self.angle_threshold = 0.1
         self.distance_threshold = 0.1
-        self.deadzone_radius = deadzone_radius
 
     def reached_target(self):
         """
@@ -59,16 +58,16 @@ class Turtlebot:
     def set_priority(self, prio: float):
         self.priority = prio
 
-    def in_deadzone(self, other):
+    def set_path_finding_steps(self, steps: List[dict]):
         """
-        Returns True if another turtlebot is within
-        the deadzone radius, else False
+        Sets the path finding steps for the turtlebot
         """
-        if self.position.distance_to(other.position) < self.deadzone_radius:
-            return True
-        else:
-            return False
+        self.path_finding_steps = {}
+        for step in steps:
+            self.path_finding_steps[step['t']] = Point(step['x'], step['y'])
 
+    def set_path_finding_step(self, step: int):
+        self.set_target(self.path_finding_steps[step])
 
     def rotate_to_target(self, odom_msg, twist_msg):
         """

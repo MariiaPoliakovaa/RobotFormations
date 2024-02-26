@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'pattern_generation = artistic_pattern_formation.artistic_pattern_controller:main'
         ],
     },
 )
