@@ -12,7 +12,7 @@ class Point:
 
     def distance_to(self, other) -> float:
         """
-        Calculates the distance to another Point
+        Calculates the euclidean distance to another Point
 
         :param other : The other point
 
@@ -31,6 +31,7 @@ class Turtlebot:
     def __init__(self, name: str, max_angular_speed: float, max_linear_speed: float):
         self.name = name
         self.position = None
+        self.initial_position = None
         self.priority = None
         self.target = None
         self.run = False
@@ -39,7 +40,6 @@ class Turtlebot:
         self.linear_speed = max_linear_speed
         self.angle_threshold = 0.1
         self.distance_threshold = 0.1
-        self.path_finding_steps = {}
 
     def reached_target(self):
         """
@@ -55,19 +55,6 @@ class Turtlebot:
 
     def stop_moving(self):
         self.run = False
-
-    def set_priority(self, prio: float):
-        self.priority = prio
-
-    def set_path_finding_steps(self, steps: List[dict]):
-        """
-        Sets the path finding steps for the turtlebot
-        """
-        for step in steps:
-            self.path_finding_steps[step['t']] = Point(step['x'], step['y'])
-
-    def set_path_finding_step(self, step: int):
-        self.set_target(self.path_finding_steps[step])
 
     def rotate_to_target(self, odom_msg, twist_msg):
         """
