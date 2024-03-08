@@ -140,13 +140,13 @@ class ArtisticPatternController(Node):
         self.sim_agents = {}
 
         # add the agents
-        for robot_name, robot in self.robots:
+        for robot_name, robot in self.robots.items():
             # add robot to simulation
-            agent = sim.addAgent((robot.position.x, robot.position.y))
+            agent = self.sim.addAgent((robot.position.x, robot.position.y))
 
             # set preferred velocity for robot
             _, preferred_velocity = self.preferred_velocity(robot)
-            sim.setAgentPrefVelocity(agent, preferred_velocity)
+            self.sim.setAgentPrefVelocity(agent, preferred_velocity)
 
             # save agent
             self.sim_agents[robot_name] = agent
@@ -165,20 +165,23 @@ class ArtisticPatternController(Node):
 
         position = robot.position
         initial_position = robot.initial_position
-        goal = self.robot_goals[robot_name]
+        goal = self.robot_goals[robot.name]
 
         # Make vectors for position and goal
-        position_v = np.array(position.x, position.y)
-        goal_v = np.array(goal.x, goal.y)
+        try:
+            position_v = np.array([position.x, position.y])
+        except:
+            ipdb.set_trace()
+        goal_v = np.array([goal.x, goal.y])
 
         # calculate K
         K = initial_position.distance_to(goal)
 
         # calculate preferred speed
-        preferred_speed = Vp * np.min(
+        preferred_speed = Vp * np.min(np.array([
             1,
-            position.distance_to(target) / K
-        )
+            position.distance_to(goal) / K
+        ]))
 
         # calculate preferred velocity
         preferred_velocity = preferred_speed * (goal_v - position_v) / position.distance_to(goal)
@@ -341,7 +344,7 @@ class ArtisticPatternController(Node):
             self.assign_targets()
 
             # start the RVO2 simulation
-            self.init_simulation():
+            self.init_simulation()
             self.targets_set = True
 
         # get the robot
