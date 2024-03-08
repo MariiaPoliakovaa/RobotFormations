@@ -2,6 +2,7 @@ import numpy as np
 import math
 import transforms3d as tf3d
 from tf_transformations import euler_from_quaternion
+from typing import List
 
 
 class Point:
@@ -27,8 +28,7 @@ class Point:
 
 
 class Turtlebot:
-    def __init__(self, name: str, max_angular_speed: float,
-                 max_linear_speed: float, deadzone_radius: float):
+    def __init__(self, name: str, max_angular_speed: float, max_linear_speed: float):
         self.name = name
         self.position = None
         self.priority = None
@@ -39,6 +39,7 @@ class Turtlebot:
         self.linear_speed = max_linear_speed
         self.angle_threshold = 0.1
         self.distance_threshold = 0.1
+        self.path_finding_steps = {}
 
     def reached_target(self):
         """
@@ -62,7 +63,6 @@ class Turtlebot:
         """
         Sets the path finding steps for the turtlebot
         """
-        self.path_finding_steps = {}
         for step in steps:
             self.path_finding_steps[step['t']] = Point(step['x'], step['y'])
 

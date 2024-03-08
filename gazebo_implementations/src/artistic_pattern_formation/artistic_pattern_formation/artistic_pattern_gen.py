@@ -29,9 +29,13 @@ def generate_points(n: int, shape: Polygon):
     """
     points = []
     i = 0
+
+    # get minimum and maximum x and y values of polygon
+    min_x, min_y, max_x, max_y = shape.bounds
+
     while i < n: 
-        x = random.uniform(-1, 1)
-        y = random.uniform(-1, 1)
+        x = random.uniform(min_x, max_x)
+        y = random.uniform(min_y, max_y)
         point = Point(x, y)
 
         if shape.contains(point):
@@ -98,11 +102,11 @@ def cell_polygons(points, shape):
     inner_polygons = []
     for polygon in voronoi_polygons:
         inner_polygons.append(polygon.intersection(shape))
-        
+
     return inner_polygons
 
 def compare_points(old_points, new_points):
-    max_delta = 0.0001
+    max_delta = 0.001
 
     for i in range(len(old_points)):
         delta = np.sqrt((old_points[i,0] - new_points[i,0])**2 + (old_points[i,1] - new_points[i,1])**2)
@@ -116,16 +120,20 @@ def goal_generation(polygon, n):
     points = np.array([[point.x, point.y] for point in points])
     old_centroids = None
 
-    i = True
-    while i:
+    run = True
+    i = 0
+    while run:
         voronoi_polygons = cell_polygons(points, polygon)
         centroids = [shapely.centroid(cell) for cell in voronoi_polygons]
         points = np.array([[point.x, point.y] for point in centroids])
 
         if old_centroids is not None:
             if compare_points(points, old_centroids):
-                i = False
-        
-        
+                run = False
+
         old_centroids = points
+        i += 1
+
+        if i%10==0:
+            print("Iteration: {}".format(i))
     return points
