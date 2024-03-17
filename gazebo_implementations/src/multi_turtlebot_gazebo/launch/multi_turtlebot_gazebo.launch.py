@@ -15,6 +15,8 @@ from pathlib import Path
 custom_models_path = "/home/mariia/Documents/Masterarbeit/Implementation_example/gazebo_implementations/src/multi_turtlebot_gazebo/models"
 world_path = '/home/mariia/Documents/Masterarbeit/Implementation_example/gazebo_implementations/src/multi_turtlebot_gazebo/worlds/empty.world'
 
+robots = ['Tony', 'Jacky', 'Andreas', 'Susan']#, 'Pikachu', 'Brudi',
+          #'DarthVader', 'Lisa']
 
 def generate_launch_description():
 
@@ -63,13 +65,13 @@ def generate_launch_description():
     remappings = [("/tf", "tf"), ("/tf_static", "tf_static")]
 
     # Spawn turtlebot3 instances in gazebo
-    robots = ['Tony', 'Jacky', 'Andreas', 'Susan', 'Pikachu']
     for i, robot in enumerate(robots):
         # Construct a unique name and namespace
         name = robot
         namespace = robot
-        x = random.uniform(-3,3)
-        y = random.uniform(-3,3)
+        limit = 5
+        x = random.uniform(0, limit)
+        y = random.uniform(0, limit)
 
         # Create state publisher node for that instance
         turtlebot_state_publisher = Node(
