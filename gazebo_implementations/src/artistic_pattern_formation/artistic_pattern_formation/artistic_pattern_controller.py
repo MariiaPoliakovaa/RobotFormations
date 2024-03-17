@@ -117,6 +117,8 @@ class ArtisticPatternController(Node):
         Initializes the RVO simulation. Must be executed after
         each robot has it's initial position
         """
+        self.get_logger().debug("Initializing simulation")
+
         # Define variables for simulation
         time_step = 1/60. # really irrelevant
         max_neighbor_dist = 0.5
@@ -207,7 +209,7 @@ class ArtisticPatternController(Node):
         n = len(self.robot_names)
         distances = np.zeros((n, n))
         robot_names = []
-        self.get_logger().info("Creating distance matrix")
+        self.get_logger().debug("Creating distance matrix")
         for i, (robot_name, robot) in enumerate(self.robots.items()):
             robot_names.append(robot_name)
             for j, goal_position in enumerate(goal_positions):
@@ -216,15 +218,22 @@ class ArtisticPatternController(Node):
                 distances[i][j] = dist**2
 
         # do target assignement
-        self.get_logger().info("Doing target assignement")
+        self.get_logger().debug("Doing target assignement")
         assigned_positions = linear_sum_assignment(distances, maximize=False)
+
         for robot_idx, goal_idx in zip(assigned_positions[0], assigned_positions[1]):
             robot_name = robot_names[robot_idx]
+            robot = self.robots[robot_name]
+            position = robot.position
             goal_position = goal_positions[goal_idx]
             self.robot_goals[robot_name] = Point(
                 goal_position[0],
                 goal_position[1]
             )
+            robot.set_target(
+                self.robot_goals[robot_name]
+            )
+            self.get_logger().debug("{}: position: {}, target: {}".format(robot_name, position, goal_position))
 
     def all_positions_assigned(self):
         """
@@ -246,9 +255,20 @@ class ArtisticPatternController(Node):
         done = True
         for robot_name, robot in self.robots.items():
             robot_goal = self.robot_goals[robot_name]
-            if robot.position.distance_to(robot_goal) > 0.01:
+            if robot.position.distance_to(robot_goal) > 0.07:
                 done = False
         return done
+
+    def targets_assigned(self):
+        """
+        Returns True if all robots have their target assigned,
+        else False
+        """
+        assigned = True
+        for robot in self.robots.values():
+            if robot.target is None:
+                assigned = False
+        return assigned
 
 
     def init_twist_publishers(self, robot_names: List[str]) -> Dict[str, Publisher]:
@@ -335,8 +355,8 @@ class ArtisticPatternController(Node):
         6. repeat steps 3-5 until all robots reached their target
         """
 
-        self.get_logger().info("===========================")
-        self.get_logger().info("Received odom message for {}".format(robot_name))
+        self.get_logger().debug("===========================")
+        self.get_logger().debug("Received odom message for {}".format(robot_name))
 
         # if positions are not yet assigned and all robot positions were received
         if not self.targets_set and self.all_positions_assigned():
@@ -357,6 +377,9 @@ class ArtisticPatternController(Node):
         robot.position = Point(
             odom_msg.pose.pose.position.x,
             odom_msg.pose.pose.position.y
+        )
+        self.get_logger().debug("{}: position: {}, target: {}".format(
+            robot_name, robot.position, robot.target)
         )
 
         # read robot velocity
@@ -379,39 +402,35 @@ class ArtisticPatternController(Node):
         if robot.target is not None and not robot.reached_target():
 
             # rotate it towards its target
-            self.get_logger().info("Rotate to target")
+            self.get_logger().debug("Rotate to target")
             twist_msg, correctly_oriented = robot.rotate_to_target(odom_msg, twist_msg)
 
             # if it aim towards its target start moving
             if correctly_oriented:
-                self.get_logger().info("Enable moving")
+                self.get_logger().debug("Enable moving")
                 robot.start_moving()
 
             # if the robot is supposed to run and has not reached its target
             if robot.run == True:
-                self.get_logger().info("Start moving")
+                self.get_logger().debug("Start moving")
                 twist_msg = robot.set_linear_speed(twist_msg)
 
         # publish twist message
         twist_publisher.publish(twist_msg)
 
         # if pattern is achieved, start next pattern
-        if self.all_positions_assigned():
-            try:
-                if self.pattern_achieved():
-                    self.get_logger().info("Next pattern")
-                    self.targets_set = False
-            except:
-                for robot in self.robots.values():
-                    self.get_logger().info("{} position: {}".format(robot.name, robot.position))
+        if self.targets_assigned():
+            if self.pattern_achieved():
+                self.get_logger().info("Next pattern")
+                self.targets_set = False
 
 
 def main():
     rclpy.init()
 
     # robot names
-    robots = ['Tony', 'Jacky', 'Andreas']#, 'Susan', 'Pikachu', 'Brudi']
-              #'DarthVader', 'Lisa', 'Gertrude']
+    robots = ['Tony', 'Jacky', 'Andreas', 'Susan']#, 'Pikachu', 'Brudi',
+              #'DarthVader', 'Lisa']
 
     #ipdb.set_trace()
     data_dir = Path(__file__).resolve().parent.parent.parent.parent.parent / 'share/data/artistic_pattern_formation'
