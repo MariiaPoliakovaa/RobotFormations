@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import random
 from scipy.spatial import Voronoi, voronoi_plot_2d
 
+def euclidean_dist(a, b):
+    return np.sqrt( (a[0] - b[0])**2 + (a[1] + b[1])**2 )
+
 # Function to create a rectangle polygon
 def create_rectangle(lower_left, upper_right):
     return Polygon([lower_left, (lower_left[0], upper_right[1]), upper_right, (upper_right[0], lower_left[1])])
