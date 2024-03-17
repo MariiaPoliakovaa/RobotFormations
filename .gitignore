@@ -162,3 +162,8 @@ cython_debug/
 gazebo_implementations/build/*
 gazebo_implementations/install/*
 gazebo_implementations/log/*
+Python-RVO2/
+formation_generation/
+formation_venv/
+pyrvo_tests/
+simple_move/
