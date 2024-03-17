@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import transforms3d as tf3d
+from tf_transformations import euler_from_quaternion
 
 
 class Point:
@@ -41,6 +42,9 @@ class Turtlebot:
         self.deadzone_radius = deadzone_radius
 
     def reached_target(self):
+        """
+        Checks wether the turtlebot has reached its target
+        """
         return self.position.distance_to(self.target) < self.distance_threshold
 
     def set_target(self, target: Point):
@@ -117,14 +121,6 @@ class Turtlebot:
             orientation.w
         ]
 
-        # Normalize the quaternion to handle small numerical errors
-        quaternion /= tf3d.quaternions.qnorm(quaternion)
-
-        # Convert quaternion to Euler angles (roll, pitch, yaw)
-        euler_angles = tf3d.euler.quat2euler(quaternion)
-        #print(euler_angles)
-
-        # extract yaw
-        yaw = euler_angles[0]
+        roll, pitch, yaw = euler_from_quaternion(quaternion)
 
         return yaw

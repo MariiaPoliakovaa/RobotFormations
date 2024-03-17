@@ -22,12 +22,13 @@ class TargetAssignementController(Node):
         super().__init__("target_assignement_controller")
         max_angular_speed = 0.5
         max_linear_speed = 0.5
+        deadzone_radius = 0.5 # I need to work out a useful value for this
+
         self.targets_set = False
         self.targets = targets
 
         # init turtlebot objects
         self.robot_names = robot_names
-        deadzone_radius = 0.5 # I need to work out a useful value for this
         self.robots = {name: Turtlebot(name,
                                        max_angular_speed,
                                        max_linear_speed,
@@ -207,10 +208,11 @@ def main():
     rclpy.init()
 
     # robot names
-    robots = ['Tony', 'Jacky', 'Andreas', 'Susan', 'Pikachu']
+    robots = ['Tony', 'Jacky', 'Andreas', 'Susan', 'Pikachu', 'Brudi']
+              #'DarthVader', 'Lisa', 'Gertrude']
 
     # Initialize target positions
-    target_positions = circle_positions(len(robots), 0.5)
+    target_positions = circle_positions(len(robots), 1.3)
 
     # Initialize target assignement controller
     tac = TargetAssignementController(robots, target_positions)
