@@ -1,85 +1,65 @@
-import rclpy
-import math
 import numpy as np
+import math
 import transforms3d as tf3d
-from rclpy.node import Node
-from geometry_msgs.msg import Twist
-from nav_msgs.msg import Odometry
+from tf_transformations import euler_from_quaternion
+from typing import List
 
-from .point import Point
 
-class TurtlebotController(Node):
-    def __init__(self, robot_name):
-        super().__init__("{}_controller".format(robot_name))
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
-        self.publisher_ = self.create_publisher(
-            Twist,
-            "/{}/cmd_vel".format(robot_name),
-            10
-        )
+    def distance_to(self, other) -> float:
+        """
+        Calculates the euclidean distance to another Point
 
-        self.subscription_ = self.create_subscription(
-            Odometry,
-            "/{}/odom".format(robot_name),
-            self.odometry_callback,
-            10
-        )
+        :param other : The other point
 
-        # Coordinates of turtlebot
-        self.position = Point(None, None)
+        :returns     : Distance to other point
+        """
+        return np.sqrt( (self.x - other.x)**2 + (self.y - other.y)**2 )
 
-        # Initialize target as None
+    def __repr__(self):
+        return "({:.2f}, {:.2f})".format(self.x, self.y)
+
+    def __str__(self):
+        return "({:.2f}, {:.2f})".format(self.x, self.y)
+
+
+class Turtlebot:
+    def __init__(self, name: str, max_angular_speed: float, max_linear_speed: float):
+        self.name = name
+        self.position = None
+        self.initial_position = None
+        self.priority = None
         self.target = None
+        self.run = False
 
-        self.angular_speed = 0.5
-        self.linear_speed = 0.2  # Adjust the linear speed as needed
-
+        self.angular_speed = max_angular_speed
+        self.linear_speed = max_linear_speed
         self.angle_threshold = 0.1
         self.distance_threshold = 0.1
 
+    def reached_target(self):
+        """
+        Checks wether the turtlebot has reached its target
+        """
+        return self.position.distance_to(self.target) < self.distance_threshold
 
     def set_target(self, target: Point):
         self.target = target
 
+    def start_moving(self):
+        self.run = True
 
-    def get_position(self):
-        return self.position
-
-
-    def odometry_callback(self, odom_msg):
-        # extract turtlebot coordinates
-        self.position.x = odom_msg.pose.pose.position.x
-        self.position.y = odom_msg.pose.pose.position.y
-
-        # calculate distance to target
-        distance_to_target = self.position.distance_to(self.target)
-
-        # initialize twist message
-        twist_msg = Twist()
-
-        # move turtlebot if it has not reached target and if target is set
-        if (distance_to_target > self.distance_threshold) and (self.target is not None):
-
-            # rotate the robot towards the target
-            twist_msg, correctly_oriented = self.rotate_to_target(odom_msg, twist_msg)
-
-            if correctly_oriented:
-                # If the robot is correctly oriented: drive
-                twist_msg.linear.x = self.linear_speed
-
-        else:
-            # Stop turtlebot
-            twist_msg.linear.x = 0.0
-            twist_msg.angular.z = 0.0
-
-        # publish twist message
-        self.publisher_.publish(twist_msg)
-
+    def stop_moving(self):
+        self.run = False
 
     def rotate_to_target(self, odom_msg, twist_msg):
         """
-        Adds a twist element to <twist_msg> to aim the turtlebot towards its
-        target.
+        Adds a twist element to <twist_msg>
+        to aim the turtlebot towards its target.
         """
         # get angle to target
         angle_to_target = math.atan2(
@@ -95,13 +75,21 @@ class TurtlebotController(Node):
 
         if abs(angle_difference) > self.angle_threshold:
             angular_speed = self.angular_speed if angle_difference > 0 else -self.angular_speed
-            twist_msg.angular.z = np.abs(angle_difference) * angular_speed
+            twist_msg.angular.z = angular_speed
             correctly_oriented = False
         else:
-            twist_msg.angular.z = 0.0
             correctly_oriented = True
 
         return twist_msg, correctly_oriented
+
+
+    def set_linear_speed(self, twist_msg):
+        """
+        Sets the velocity of the turtlebot
+        """
+        if self.run == True:
+            twist_msg.linear.x = self.linear_speed
+        return twist_msg
 
 
     def get_orientation(self, msg):
@@ -119,31 +107,6 @@ class TurtlebotController(Node):
             orientation.w
         ]
 
-        # Normalize the quaternion to handle small numerical errors
-        quaternion /= tf3d.quaternions.qnorm(quaternion)
-
-        # Convert quaternion to Euler angles (roll, pitch, yaw)
-        euler_angles = tf3d.euler.quat2euler(quaternion)
-        #print(euler_angles)
-
-        # extract yaw
-        yaw = euler_angles[0]
+        roll, pitch, yaw = euler_from_quaternion(quaternion)
 
         return yaw
-
-
-def main():
-    target = Point(-2, 2)
-
-    rclpy.init()
-
-    move_turtlebot = TurtlebotController('Tony')
-    move_turtlebot.set_target(target)
-
-    rclpy.spin(move_turtlebot)
-    move_turtlebot.destroy_node()
-    rclpy.shutdown()
-
-if __name__ == '__main__':
-    main()
-
