@@ -1,4 +1,5 @@
 import os
+import json
 import random
 from launch import LaunchDescription
 from launch.substitutions import LaunchConfiguration
@@ -15,8 +16,15 @@ from pathlib import Path
 custom_models_path = "/home/mariia/Documents/Masterarbeit/Implementation_example/gazebo_implementations/src/multi_turtlebot_gazebo/models"
 world_path = '/home/mariia/Documents/Masterarbeit/Implementation_example/gazebo_implementations/src/multi_turtlebot_gazebo/worlds/empty.world'
 
-robots = ['Tony', 'Jacky', 'Andreas', 'Susan']#, 'Pikachu', 'Brudi',
-          #'DarthVader', 'Lisa']
+def get_robots():
+    """
+    Gets robot names and starting positions from env
+    """
+    robots_json = os.environ.get("ROBOTS")
+    robots = json.loads(robots_json)
+
+    return robots
+
 
 def generate_launch_description():
 
@@ -65,13 +73,15 @@ def generate_launch_description():
     remappings = [("/tf", "tf"), ("/tf_static", "tf_static")]
 
     # Spawn turtlebot3 instances in gazebo
-    for i, robot in enumerate(robots):
+    robots = get_robots()
+
+    for robot in robots:
         # Construct a unique name and namespace
-        name = robot
-        namespace = robot
-        limit = 5
-        x = random.uniform(0, limit)
-        y = random.uniform(0, limit)
+        name = robot['name']
+        namespace = name
+        x = int(robot['x'])
+        y = int(robot['y'])
+        w = float(robot['orientation'])
 
         # Create state publisher node for that instance
         turtlebot_state_publisher = Node(
@@ -103,7 +113,7 @@ def generate_launch_description():
                 "-z",
                 "0.01",
                 "-Y",
-                "3.14159",
+                str(w),
                 "-unpause",
             ],
             output="screen",
