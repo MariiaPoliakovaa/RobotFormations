@@ -24,7 +24,9 @@ from geometry_msgs.msg import Twist
 
 from typing import List, Dict
 
-from .turtlebot import Turtlebot, Point
+from turtlebot_controller.turtlebot_controller import Turtlebot, Point
+
+#from .turtlebot import Turtlebot, Point
 from .artistic_pattern_gen import create_rectangle, create_circle, create_triangle, goal_generation, euclidean_dist
 
 
