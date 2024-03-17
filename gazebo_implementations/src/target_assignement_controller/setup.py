@@ -13,7 +13,8 @@ setup(
     ],
     install_requires=[
         'setuptools',
-        'tf_transformations'
+        'tf_transformations',
+        'turtlebot_controller'
     ],
     zip_safe=True,
     maintainer='mariia',

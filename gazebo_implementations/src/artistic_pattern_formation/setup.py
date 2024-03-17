@@ -12,7 +12,10 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/data/' + package_name, ['data/patterns.json']),
     ],
-    install_requires=['setuptools'],
+    install_requires=[
+        'setuptools',
+        'turtlebot_controller'
+    ],
     zip_safe=True,
     maintainer='mariia',
     maintainer_email='s91071@bht-berlin.de',
