@@ -1,9 +1,11 @@
-from shapely.geometry import Polygon, Point
+from shapely.geometry import Polygon, Point, MultiPoint
+from shapely.ops import voronoi_diagram
+from scipy.spatial import Voronoi
 import shapely
 import numpy as np
 import matplotlib.pyplot as plt
 import random
-from scipy.spatial import Voronoi, voronoi_plot_2d
+import ipdb
 
 def euclidean_dist(a, b):
     return np.sqrt( (a[0] - b[0])**2 + (a[1] + b[1])**2 )
@@ -24,16 +26,13 @@ def create_triangle(vertices):
     return Polygon(vertices)
 
 def generate_points(n: int, shape: Polygon):
-    """
-    param n: Number of points to be generated
-    """
     points = []
     i = 0
 
     # get minimum and maximum x and y values of polygon
     min_x, min_y, max_x, max_y = shape.bounds
 
-    while i < n: 
+    while i < n:
         x = random.uniform(min_x, max_x)
         y = random.uniform(min_y, max_y)
         point = Point(x, y)
@@ -42,6 +41,17 @@ def generate_points(n: int, shape: Polygon):
             points.append(point)
             i += 1
     return points
+
+"""
+def generate_points(num_points, polygon):
+    points = []
+    min_x, min_y, max_x, max_y = polygon.bounds
+    while len(points) < num_points:
+        random_point = Point(np.random.uniform(min_x, max_x), np.random.uniform(min_y, max_y))
+        if polygon.contains(random_point):
+            points.append(Point(random_point.x, random_point.y))
+    return points
+"""
 
 
 def points_on_polygon_boundary(polygon, n):
@@ -67,43 +77,34 @@ def points_on_polygon_boundary(polygon, n):
     return sampled_points
 
 def cell_polygons(points, shape):
-    # Create giant rectangle
-    rectangle_lower_left = (-50, -50)
-    rectangle_upper_right = (50, 50)
-    giant_rectangle = create_rectangle(rectangle_lower_left, rectangle_upper_right)
-    
+    # Create buffer around shape
+    buffer = shape.buffer(2)
+
+    # create a boundary
+    boundary = shape.buffer(10)
+
     # generate points on the boundary of a giant rectangle around the polygon
-    boundary_points = points_on_polygon_boundary(giant_rectangle, 1000)
+    buffer_points = points_on_polygon_boundary(buffer, 1000)
 
     # get all points in one array
-    all_points = np.vstack((boundary_points, points))
+    all_points = np.vstack((buffer_points, points))
 
     # compute voronoi
     voronoi = Voronoi(all_points)
 
     # Extract Voronoi cells as Shapely polygons
-    voronoi_polygons = []
+    cells = []
     for region in voronoi.regions:
-        if len(region) > 0 and region[0] != -1:
+        if len(region) > 1 and -1 not in region:
             vertices = [voronoi.vertices[i] for i in region]
 
-            # check if at least one of the vertices is inside the shape
-            contained = False
+            contained = True
             for vertice in vertices:
-                point = Point(vertice[0], vertice[1])
-                if shape.contains(point):
-                    contained = True
-
+                if not boundary.contains(Point(vertice[0], vertice[1])):
+                    contained = False
             if contained:
-                polygon = Polygon(vertices)
-                voronoi_polygons.append(polygon)
-
-    # cut off everything not contained by the outer shape
-    inner_polygons = []
-    for polygon in voronoi_polygons:
-        inner_polygons.append(polygon.intersection(shape))
-
-    return inner_polygons
+                cells.append(shape.intersection(Polygon(vertices)))
+    return cells
 
 def compare_points(old_points, new_points):
     max_delta = 0.001
@@ -115,25 +116,49 @@ def compare_points(old_points, new_points):
     return True
 
 def goal_generation(polygon, n):
-    # generate random points in polygon
-    points = generate_points(n, polygon)
-    points = np.array([[point.x, point.y] for point in points])
-    old_centroids = None
+    # This is very hacky, but I dont know
+    # how to fix the voronoi partition within a polygon.
+    # Whenever there are less voronoi cells than there should be,
+    # restart the computation.
+    # TODO: Fix this shit
+    error = True
+    while error:
+        error = False
 
-    run = True
-    i = 0
-    while run:
-        voronoi_polygons = cell_polygons(points, polygon)
-        centroids = [shapely.centroid(cell) for cell in voronoi_polygons]
-        points = np.array([[point.x, point.y] for point in centroids])
+        # generate random points in polygon
+        points = generate_points(n, polygon)
+        points = np.array([[point.x, point.y] for point in points])
+        old_centroids = None
 
-        if old_centroids is not None:
-            if compare_points(points, old_centroids):
-                run = False
+        run = True
+        i = 0
+        while run:
+            voronoi_polygons = cell_polygons(points, polygon)
+            centroids = [shapely.centroid(cell) for cell in voronoi_polygons]
 
-        old_centroids = points
-        i += 1
+            points = np.array([[point.x, point.y] for point in centroids])
 
-        if i%10==0:
-            print("Iteration: {}".format(i))
+
+            if len(points) != n:
+                print("Encountered error, restarting computation!")
+                error = True
+                break
+
+            if old_centroids is not None:
+                if compare_points(points, old_centroids):
+                    run = False
+
+            old_centroids = points
+            i += 1
+
+            if i%10==0:
+                print("Iteration: {}".format(i))
     return points
+
+
+if __name__ == '__main__':
+    # Create a triangle
+    triangle_vertices = [(1.5, -2.5), (4.5, -2.5), (3, 1.5)]
+    triangle_polygon = create_triangle(triangle_vertices)
+
+    goals = goal_generation(triangle_polygon, 5)

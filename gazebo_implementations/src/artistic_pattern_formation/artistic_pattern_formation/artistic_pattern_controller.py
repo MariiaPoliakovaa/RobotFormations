@@ -17,6 +17,7 @@ from scipy.optimize import linear_sum_assignment
 from rclpy.node import Node
 from rclpy.subscription import Subscription
 from rclpy.publisher import Publisher
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy, LivelinessPolicy
 from geometry_msgs.msg import Pose
 from nav_msgs.msg import Odometry
 from rosgraph_msgs.msg import Clock
@@ -26,24 +27,24 @@ from typing import List, Dict
 
 from turtlebot_controller.turtlebot_controller import Turtlebot, Point
 
-#from .turtlebot import Turtlebot, Point
 from .artistic_pattern_gen import create_rectangle, create_circle, create_triangle, goal_generation, euclidean_dist
 
 
 class ArtisticPatternController(Node):
-    def __init__(self, robot_names: List[str], patterns: List[Polygon]):
+    def __init__(self, robot_names: List[str], patterns: Dict[str, Polygon]):
         """
         :param robot_names : A list of robot names
-        :param patterns    : The patterns that are used for the formations
+        :param patterns    : A dict with the names and polygons of patterns
         """
         super().__init__("artistic_pattern_controller")
-        self.max_angular_speed = 0.5
-        self.max_linear_speed = 0.5 # TODO: get turtlebot max speed
+        self.max_angular_speed = 0.6
+        self.max_linear_speed = 0.6 # TODO: get turtlebot max speed
         self.targets_set = False
-        self.last_seconds = 0
+        self.seconds = 0
 
         # make an endless cycling iterator for the patterns
-        self.patterns = cycle(patterns)
+        self.pattern_names = cycle(patterns.keys())
+        self.patterns = patterns
 
         # init turtlebot objects
         self.robot_names = robot_names
@@ -64,7 +65,7 @@ class ArtisticPatternController(Node):
         """
         If all robot positions were updated at least once.
 
-        Update all agent positions in the simulation, do one step 
+        Update all agent positions in the simulation, do one step
         and update all robots speed based on the simulation
         """
         # chech if all robots had their position updated
@@ -89,11 +90,11 @@ class ArtisticPatternController(Node):
             position = (robot.position.x, robot.position.y)
             self.sim.setAgentPosition(agent, position)
 
-            # update preferred velocity
+            # update simulation preferred velocity
             preferred_velocity = self.preferred_velocity(robot)
             self.sim.setAgentPrefVelocity(agent, preferred_velocity)
 
-            # update actual robot velocity
+            # update simulation robot velocity
             self.sim.setAgentVelocity(agent, robot.velocity)
 
         # set the time step of the simulation
@@ -172,10 +173,7 @@ class ArtisticPatternController(Node):
         goal = self.robot_goals[robot.name]
 
         # Make vectors for position and goal
-        try:
-            position_v = np.array([position.x, position.y])
-        except:
-            ipdb.set_trace()
+        position_v = np.array([position.x, position.y])
         goal_v = np.array([goal.x, goal.y])
 
         # calculate K
@@ -201,17 +199,16 @@ class ArtisticPatternController(Node):
         :param pattern : The pattern used to generate target positions
         """
         # use next pattern
-        pattern = next(self.patterns)
+        pattern_name = next(self.pattern_names)
+        pattern = self.patterns[pattern_name]
 
-        # goal positions equal pattern, as
-        # we pre-compute patterns to save on compute time
-        goal_positions = pattern
+        self.get_logger().info("Computing goal positions for {}".format(pattern_name))
+        goal_positions = goal_generation(pattern, len(self.robots))
 
         # create distance matrix
         n = len(self.robot_names)
         distances = np.zeros((n, n))
         robot_names = []
-        self.get_logger().debug("Creating distance matrix")
         for i, (robot_name, robot) in enumerate(self.robots.items()):
             robot_names.append(robot_name)
             for j, goal_position in enumerate(goal_positions):
@@ -220,7 +217,6 @@ class ArtisticPatternController(Node):
                 distances[i][j] = dist**2
 
         # do target assignement
-        self.get_logger().debug("Doing target assignement")
         assigned_positions = linear_sum_assignment(distances, maximize=False)
 
         for robot_idx, goal_idx in zip(assigned_positions[0], assigned_positions[1]):
@@ -235,7 +231,6 @@ class ArtisticPatternController(Node):
             robot.set_target(
                 self.robot_goals[robot_name]
             )
-            self.get_logger().debug("{}: position: {}, target: {}".format(robot_name, position, goal_position))
 
     def all_positions_assigned(self):
         """
@@ -313,14 +308,20 @@ class ArtisticPatternController(Node):
                 lambda msg, robot_name=robot_name: self.odom_callback(msg, robot_name),
                 10
             )
-            subscriptions.append(subscription)
+
+        # I need to specifically set the profile, wont work otherwise
+        clock_qos_profile = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_ALL,
+            durability=DurabilityPolicy.VOLATILE,
+        )
 
         # subscribe to time message from gazebo
         time_subscription = self.create_subscription(
             Clock,
             '/clock',
             self.timer_callback,
-            10
+            clock_qos_profile
         )
         return subscriptions
 
@@ -380,9 +381,6 @@ class ArtisticPatternController(Node):
             odom_msg.pose.pose.position.x,
             odom_msg.pose.pose.position.y
         )
-        self.get_logger().debug("{}: position: {}, target: {}".format(
-            robot_name, robot.position, robot.target)
-        )
 
         # read robot velocity
         robot.velocity = (
@@ -404,17 +402,14 @@ class ArtisticPatternController(Node):
         if robot.target is not None and not robot.reached_target():
 
             # rotate it towards its target
-            self.get_logger().debug("Rotate to target")
             twist_msg, correctly_oriented = robot.rotate_to_target(odom_msg, twist_msg)
 
             # if it aim towards its target start moving
             if correctly_oriented:
-                self.get_logger().debug("Enable moving")
                 robot.start_moving()
 
             # if the robot is supposed to run and has not reached its target
             if robot.run == True:
-                self.get_logger().debug("Start moving")
                 twist_msg = robot.set_linear_speed(twist_msg)
 
         # publish twist message
@@ -426,24 +421,41 @@ class ArtisticPatternController(Node):
                 self.get_logger().info("Next pattern")
                 self.targets_set = False
 
+def create_patterns():
+    circle_center = (-1.5, -1.5)
+    circle_radius = 1.0
+    circle_polygon = create_circle(circle_center, circle_radius)
+
+    # Create a triangle
+    triangle_vertices = [(1.5, -2.5), (4.5, -2.5), (3, 1.5)]
+    triangle_polygon = create_triangle(triangle_vertices)
+
+    # Create a rectangle
+    rectangle_lower_left = (-1.5, 1.5)
+    rectangle_upper_right = (1.5, 4.5)
+    rectangle_polygon = create_rectangle(rectangle_lower_left, rectangle_upper_right)
+
+    patterns = {
+        'circle': circle_polygon,
+        'triangle': triangle_polygon,
+        'rectangle': rectangle_polygon
+    }
+
+    return patterns
+
 
 def main():
     rclpy.init()
 
-    # robot names
-    robots = ['Tony', 'Jacky', 'Andreas', 'Susan']#, 'Pikachu', 'Brudi',
-              #'DarthVader', 'Lisa']
+    # get robots
+    robots = json.loads(os.environ.get("ROBOTS"))
+    robots = [robot['name'] for robot in robots]
 
-    #ipdb.set_trace()
-    data_dir = Path(__file__).resolve().parent.parent.parent.parent.parent / 'share/data/artistic_pattern_formation'
-    with open(Path(data_dir, 'patterns.json'), 'r') as f:
-        goal_positions = json.load(f)
-
-    # goal positions to numpy arrays
-    goal_positions = [np.array(goal_pos) for goal_pos in goal_positions]
+    # target patterns
+    patterns = create_patterns()
 
     # Initialize target assignement controller
-    tac = ArtisticPatternController(robots, goal_positions)
+    tac = ArtisticPatternController(robots, patterns)
 
     rclpy.spin(tac)
     rclpy.shutdown()
