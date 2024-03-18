@@ -35,7 +35,7 @@ class ArtisticTurtleBot(Turtlebot):
         #    print(factor)
 
             # reduce Vp the closer the initial position is to the goal
-            Vp *= factor
+            Vp *= factor**2
 
         # Make vectors for position and goal
         position_v = np.array([position.x, position.y])

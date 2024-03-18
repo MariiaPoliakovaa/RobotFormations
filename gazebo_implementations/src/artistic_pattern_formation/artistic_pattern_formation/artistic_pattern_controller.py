@@ -430,7 +430,7 @@ class ArtisticPatternController(Node):
                 self.reset_robots()
 
 def create_patterns():
-    circle_center = (0, 0)
+    circle_center = (-3, -3)
     circle_radius = 1.0
     circle_polygon = create_circle(circle_center, circle_radius)
 
@@ -439,8 +439,8 @@ def create_patterns():
     triangle_polygon = create_triangle(triangle_vertices)
 
     # Create a rectangle
-    rectangle_lower_left = (-1.0, -1.0)
-    rectangle_upper_right = (1.0, 1.0)
+    rectangle_lower_left = (2.0, 2.0)
+    rectangle_upper_right = (3.5, 3.5)
     rectangle_polygon = create_rectangle(rectangle_lower_left, rectangle_upper_right)
 
     patterns = {

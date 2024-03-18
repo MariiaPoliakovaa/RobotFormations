@@ -80,9 +80,9 @@ class Turtlebot:
         if abs(angle_difference) > self.angle_threshold:
             angular_speed = self.angular_speed if angle_difference > 0 else -self.angular_speed
 
-            # rotate slower when close to target rotation
+            # NOTE: rotate slower when close to target rotation
             factor = (2*np.pi - angle_difference) / (2*np.pi)
-            angular_speed *= factor
+            angular_speed *= factor**2
             twist_msg.angular.z = angular_speed
             correctly_oriented = False
         else:
