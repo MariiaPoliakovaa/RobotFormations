@@ -25,7 +25,7 @@ from geometry_msgs.msg import Twist
 
 from typing import List, Dict
 
-from turtlebot_controller.turtlebot_controller import Turtlebot, Point
+from turtlebot_controller.turtlebot_controller import Point
 
 from .artistic_pattern_gen import create_rectangle, create_circle, create_triangle, goal_generation, euclidean_dist
 
@@ -69,7 +69,8 @@ class ArtisticPatternController(Node):
         Update all agent positions in the simulation, do one step
         and update all robots speed based on the simulation
         """
-        # chech if all robots had their position updated
+        # chech if all robots had their position updated,
+        # if not, quit the update step
         update = True
         for robot in self.robots.values():
             if robot.updated is not True:
@@ -173,7 +174,7 @@ class ArtisticPatternController(Node):
         other robots. I propose reducing the robots speed if it is
         close to it's target.
         """
-        Vp = 0.8 * self.max_linear_speed
+        Vp = 0.8 * robot.max_linear_speed
 
         position = robot.position
         initial_position = robot.initial_position
@@ -193,7 +194,7 @@ class ArtisticPatternController(Node):
         ]))
 
         # reduce speed if starting position is close to it's target
-        min_dist = 1
+        min_dist = 2
         if initial_position.distance_to(goal) < min_dist:
             reduction_factor = np.min(np.array([
                 1,
