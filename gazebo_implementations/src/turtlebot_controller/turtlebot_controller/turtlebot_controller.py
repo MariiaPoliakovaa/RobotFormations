@@ -40,8 +40,9 @@ class Turtlebot:
 
         self.angular_speed = max_angular_speed
         self.linear_speed = max_linear_speed
+        self.max_linear_speed = max_linear_speed
         self.angle_threshold = 0.05
-        self.distance_threshold = 0.02
+        self.distance_threshold = 0.08
 
     def reached_target(self):
         """
@@ -72,13 +73,16 @@ class Turtlebot:
 
         # get current orientation
         current_orientation = self.get_orientation(odom_msg)
-        #ipdb.set_trace()
 
         # calculate how far to move
         angle_difference = angle_to_target - current_orientation
 
         if abs(angle_difference) > self.angle_threshold:
             angular_speed = self.angular_speed if angle_difference > 0 else -self.angular_speed
+
+            # rotate slower when close to target rotation
+            factor = (2*np.pi - angle_difference) / (2*np.pi)
+            angular_speed *= factor
             twist_msg.angular.z = angular_speed
             correctly_oriented = False
         else:

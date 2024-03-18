@@ -28,6 +28,7 @@ from typing import List, Dict
 from turtlebot_controller.turtlebot_controller import Point
 
 from .artistic_pattern_gen import create_rectangle, create_circle, create_triangle, goal_generation, euclidean_dist
+from .turtlebot import ArtisticTurtleBot as Turtlebot
 
 
 class ArtisticPatternController(Node):
@@ -93,7 +94,8 @@ class ArtisticPatternController(Node):
             self.sim.setAgentPosition(agent, position)
 
             # update simulation preferred velocity
-            _, preferred_velocity = self.preferred_velocity(robot)
+            goal = self.robot_goals[name]
+            preferred_speed, preferred_velocity = robot.preferred_velocity(goal)
             self.sim.setAgentPrefVelocity(agent, preferred_velocity)
 
             # update simulation robot velocity
@@ -110,9 +112,16 @@ class ArtisticPatternController(Node):
         for name in self.robot_names:
             agent = self.sim_agents[name]
             robot = self.robots[name]
+            goal = self.robot_goals[name]
 
             velocity = self.sim.getAgentVelocity(agent)
             speed = np.sqrt(velocity[0]**2 + velocity[1]**2)
+
+            # NOTE:
+            # if robot is close to target, clip it's speed to not overshoot
+            if robot.position.distance_to(goal) < 0.2:
+                preferred_speed, _ = robot.preferred_velocity(goal)
+                speed = preferred_speed
 
             robot.linear_speed = speed
 
@@ -152,65 +161,12 @@ class ArtisticPatternController(Node):
             agent = self.sim.addAgent((robot.position.x, robot.position.y))
 
             # set preferred velocity for robot
-            _, preferred_velocity = self.preferred_velocity(robot)
+            goal = self.robot_goals[robot_name]
+            _, preferred_velocity = robot.preferred_velocity(goal)
             self.sim.setAgentPrefVelocity(agent, preferred_velocity)
 
             # save agent
             self.sim_agents[robot_name] = agent
-
-    def preferred_velocity(self, robot):
-        """
-        Computes the preferred speed for the provided robot
-
-        In the paper the velocity is computed. That means
-        it is a vector. As we rotate the robot before moving,
-        the speed should suffice.
-        The second term is normalized and represents the direction
-        vector.
-
-        Problem: The robots speed up very quickly even if their
-        target position is very close to them. This can cause them
-        to overshoot their target or be unable to react in time to
-        other robots. I propose reducing the robots speed if it is
-        close to it's target.
-        """
-        Vp = 0.8 * robot.max_linear_speed
-
-        position = robot.position
-        initial_position = robot.initial_position
-        goal = self.robot_goals[robot.name]
-
-        # Make vectors for position and goal
-        position_v = np.array([position.x, position.y])
-        goal_v = np.array([goal.x, goal.y])
-
-        # calculate K
-        K = initial_position.distance_to(goal)
-
-        # calculate preferred speed
-        preferred_speed = Vp * np.min(np.array([
-            1,
-            position.distance_to(goal) / K
-        ]))
-
-        # reduce speed if starting position is close to it's target
-        min_dist = 2
-        if initial_position.distance_to(goal) < min_dist:
-            reduction_factor = np.min(np.array([
-                1,
-                (min_dist - initial_position.distance_to(goal)) / min_dist
-            ]))
-
-            preferred_speed *= reduction_factor
-
-        # clip minimum speed to 0.1 (Not originally part of the algorithm)
-        preferred_speed = preferred_speed if preferred_speed > 0.1 else 0.1
-
-        # calculate preferred velocity
-        preferred_velocity = preferred_speed * (goal_v - position_v) / position.distance_to(goal)
-        preferred_velocity = (preferred_velocity[0], preferred_velocity[1])
-
-        return preferred_speed, preferred_velocity
 
     def assign_targets(self):
         """
