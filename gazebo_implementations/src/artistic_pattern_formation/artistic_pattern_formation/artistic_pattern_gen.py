@@ -150,9 +150,6 @@ def goal_generation(polygon, n):
 
             old_centroids = points
             i += 1
-
-            if i%10==0:
-                print("Iteration: {}".format(i))
     return points
 
 

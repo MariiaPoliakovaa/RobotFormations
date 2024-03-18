@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import ipdb
 import transforms3d as tf3d
 from tf_transformations import euler_from_quaternion
 from typing import List
@@ -35,11 +36,12 @@ class Turtlebot:
         self.priority = None
         self.target = None
         self.run = False
+        self.correctly_oriented = False
 
         self.angular_speed = max_angular_speed
         self.linear_speed = max_linear_speed
-        self.angle_threshold = 0.1
-        self.distance_threshold = 0.1
+        self.angle_threshold = 0.05
+        self.distance_threshold = 0.02
 
     def reached_target(self):
         """
@@ -61,14 +63,16 @@ class Turtlebot:
         Adds a twist element to <twist_msg>
         to aim the turtlebot towards its target.
         """
+
         # get angle to target
         angle_to_target = math.atan2(
             self.target.y - self.position.y,
             self.target.x - self.position.x
-        )
+        ) % (2*np.pi)
 
         # get current orientation
         current_orientation = self.get_orientation(odom_msg)
+        #ipdb.set_trace()
 
         # calculate how far to move
         angle_difference = angle_to_target - current_orientation
@@ -80,7 +84,8 @@ class Turtlebot:
         else:
             correctly_oriented = True
 
-        return twist_msg, correctly_oriented
+        self.correctly_oriented = correctly_oriented
+        return twist_msg
 
 
     def set_linear_speed(self, twist_msg):
@@ -109,4 +114,4 @@ class Turtlebot:
 
         roll, pitch, yaw = euler_from_quaternion(quaternion)
 
-        return yaw
+        return yaw % (2*np.pi)

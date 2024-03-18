@@ -41,6 +41,7 @@ class ArtisticPatternController(Node):
         self.max_linear_speed = 0.6 # TODO: get turtlebot max speed
         self.targets_set = False
         self.seconds = 0
+        self.last_seconds = 0
 
         # make an endless cycling iterator for the patterns
         self.pattern_names = cycle(patterns.keys())
@@ -91,7 +92,7 @@ class ArtisticPatternController(Node):
             self.sim.setAgentPosition(agent, position)
 
             # update simulation preferred velocity
-            preferred_velocity = self.preferred_velocity(robot)
+            _, preferred_velocity = self.preferred_velocity(robot)
             self.sim.setAgentPrefVelocity(agent, preferred_velocity)
 
             # update simulation robot velocity
@@ -165,6 +166,12 @@ class ArtisticPatternController(Node):
         the speed should suffice.
         The second term is normalized and represents the direction
         vector.
+
+        Problem: The robots speed up very quickly even if their
+        target position is very close to them. This can cause them
+        to overshoot their target or be unable to react in time to
+        other robots. I propose reducing the robots speed if it is
+        close to it's target.
         """
         Vp = 0.8 * self.max_linear_speed
 
@@ -185,6 +192,19 @@ class ArtisticPatternController(Node):
             position.distance_to(goal) / K
         ]))
 
+        # reduce speed if starting position is close to it's target
+        min_dist = 1
+        if initial_position.distance_to(goal) < min_dist:
+            reduction_factor = np.min(np.array([
+                1,
+                (min_dist - initial_position.distance_to(goal)) / min_dist
+            ]))
+
+            preferred_speed *= reduction_factor
+
+        # clip minimum speed to 0.1 (Not originally part of the algorithm)
+        preferred_speed = preferred_speed if preferred_speed > 0.1 else 0.1
+
         # calculate preferred velocity
         preferred_velocity = preferred_speed * (goal_v - position_v) / position.distance_to(goal)
         preferred_velocity = (preferred_velocity[0], preferred_velocity[1])
@@ -198,6 +218,7 @@ class ArtisticPatternController(Node):
 
         :param pattern : The pattern used to generate target positions
         """
+        t1 = time.time()
         # use next pattern
         pattern_name = next(self.pattern_names)
         pattern = self.patterns[pattern_name]
@@ -232,6 +253,10 @@ class ArtisticPatternController(Node):
                 self.robot_goals[robot_name]
             )
 
+        # calculate the elapsed time
+        t2 = time.time()
+        self.get_logger().info("Target assignement took {:.2f}s".format(t2-t1))
+
     def all_positions_assigned(self):
         """
         Returns True if all turtlebots know their
@@ -239,10 +264,9 @@ class ArtisticPatternController(Node):
         """
         positions_set = True
         for robot in self.robots.values():
-            if robot.position is None:
+            if robot.position is None or robot.initial_position is None:
                 positions_set = False
         return positions_set
-
 
     def pattern_achieved(self) -> bool:
         """
@@ -252,7 +276,7 @@ class ArtisticPatternController(Node):
         done = True
         for robot_name, robot in self.robots.items():
             robot_goal = self.robot_goals[robot_name]
-            if robot.position.distance_to(robot_goal) > 0.07:
+            if not robot.reached_target():
                 done = False
         return done
 
@@ -332,6 +356,28 @@ class ArtisticPatternController(Node):
         self.last_seconds = self.seconds
         self.seconds = time_msg.clock.sec + time_msg.clock.nanosec / 1e9
 
+    def reset_robots(self):
+        """
+        Unsets the targets for all robots
+        """
+        for robot in self.robots.values():
+            robot.target = None
+            robot.stop_moving()
+            robot.initial_position = None
+        self.targets_set = False
+
+    def robots_correctly_oriented(self):
+        """
+        Returns true if all robots are correctly oriented
+        """
+        correctly_oriented = True
+
+        for robot in self.robots.values():
+            if not robot.correctly_oriented:
+                correctly_oriented = False
+
+        return correctly_oriented
+
     def odom_callback(self, odom_msg: Odometry, robot_name: str):
         """
         Odometry callback to receive pose from the turtlebot and
@@ -399,13 +445,16 @@ class ArtisticPatternController(Node):
         twist_msg = Twist()
 
         # if the robots target is set and its not reached its target
-        if robot.target is not None and not robot.reached_target():
+        if robot.target is not None and not robot.reached_target() and self.all_positions_assigned():
+
+            # RVO2 Simulation step
+            self.update_step()
 
             # rotate it towards its target
-            twist_msg, correctly_oriented = robot.rotate_to_target(odom_msg, twist_msg)
+            twist_msg = robot.rotate_to_target(odom_msg, twist_msg)
 
             # if it aim towards its target start moving
-            if correctly_oriented:
+            if self.robots_correctly_oriented():
                 robot.start_moving()
 
             # if the robot is supposed to run and has not reached its target
@@ -419,20 +468,22 @@ class ArtisticPatternController(Node):
         if self.targets_assigned():
             if self.pattern_achieved():
                 self.get_logger().info("Next pattern")
-                self.targets_set = False
+
+                # unset previous targets
+                self.reset_robots()
 
 def create_patterns():
-    circle_center = (-1.5, -1.5)
+    circle_center = (0, 0)
     circle_radius = 1.0
     circle_polygon = create_circle(circle_center, circle_radius)
 
     # Create a triangle
-    triangle_vertices = [(1.5, -2.5), (4.5, -2.5), (3, 1.5)]
+    triangle_vertices = [(-1.0, -1.0), (1.0, -1.0), (0.0, 1.0)]
     triangle_polygon = create_triangle(triangle_vertices)
 
     # Create a rectangle
-    rectangle_lower_left = (-1.5, 1.5)
-    rectangle_upper_right = (1.5, 4.5)
+    rectangle_lower_left = (-1.0, -1.0)
+    rectangle_upper_right = (1.0, 1.0)
     rectangle_polygon = create_rectangle(rectangle_lower_left, rectangle_upper_right)
 
     patterns = {
