@@ -24,14 +24,15 @@ def create_triangle(vertices):
     return Polygon(vertices)
 
 def generate_points(n: int, shape: Polygon):
-    """
-    param n: Number of points to be generated
-    """
     points = []
     i = 0
-    while i < n: 
-        x = random.uniform(-1, 1)
-        y = random.uniform(-1, 1)
+
+    # get minimum and maximum x and y values of polygon
+    min_x, min_y, max_x, max_y = shape.bounds
+
+    while i < n:
+        x = random.uniform(min_x, max_x)
+        y = random.uniform(min_y, max_y)
         point = Point(x, y)
 
         if shape.contains(point):
@@ -64,12 +65,13 @@ def points_on_polygon_boundary(polygon, n):
 
 def cell_polygons(points, shape):
     # Create giant rectangle
-    rectangle_lower_left = (-50, -50)
-    rectangle_upper_right = (50, 50)
-    giant_rectangle = create_rectangle(rectangle_lower_left, rectangle_upper_right)
+    #rectangle_lower_left = (-50, -50)
+    #rectangle_upper_right = (50, 50)
+    #giant_rectangle = create_rectangle(rectangle_lower_left, rectangle_upper_right)
+    buffer = shape.buffer(2)
     
     # generate points on the boundary of a giant rectangle around the polygon
-    boundary_points = points_on_polygon_boundary(giant_rectangle, 1000)
+    boundary_points = points_on_polygon_boundary(buffer, 1000)
 
     # get all points in one array
     all_points = np.vstack((boundary_points, points))
@@ -78,31 +80,22 @@ def cell_polygons(points, shape):
     voronoi = Voronoi(all_points)
 
     # Extract Voronoi cells as Shapely polygons
-    voronoi_polygons = []
+    cells = []
     for region in voronoi.regions:
-        if len(region) > 0 and region[0] != -1:
+        if len(region) > 1 and -1 not in region:
             vertices = [voronoi.vertices[i] for i in region]
-
-            # check if at least one of the vertices is inside the shape
+    
             contained = False
             for vertice in vertices:
-                point = Point(vertice[0], vertice[1])
-                if shape.contains(point):
+                if polygon.contains(Point(vertice[0], vertice[1])):
                     contained = True
-
             if contained:
-                polygon = Polygon(vertices)
-                voronoi_polygons.append(polygon)
+                cells.append(polygon.intersection(Polygon(vertices)))
+    return cells
 
-    # cut off everything not contained by the outer shape
-    inner_polygons = []
-    for polygon in voronoi_polygons:
-        inner_polygons.append(polygon.intersection(shape))
-        
-    return inner_polygons
 
 def compare_points(old_points, new_points):
-    max_delta = 0.0001
+    max_delta = 0.001
 
     for i in range(len(old_points)):
         delta = np.sqrt((old_points[i,0] - new_points[i,0])**2 + (old_points[i,1] - new_points[i,1])**2)
@@ -125,7 +118,9 @@ def goal_generation(polygon, n):
         if old_centroids is not None:
             if compare_points(points, old_centroids):
                 i = False
-        
+
+        if i%10 == 0:
+            print("Iteration: ", i)
         
         old_centroids = points
     return points
