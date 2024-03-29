@@ -7,6 +7,6 @@ if [ $# -eq 0 ]; then
 fi
 
 source install/setup.bash
-source setup.sh 4
+source setup.sh $1
 
 ros2 launch multi_turtlebot_gazebo multi_turtlebot_gazebo.launch.py

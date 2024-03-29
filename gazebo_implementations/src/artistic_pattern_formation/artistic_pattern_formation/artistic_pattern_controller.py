@@ -27,26 +27,26 @@ from typing import List, Dict
 
 from turtlebot_controller.turtlebot_controller import Point
 
-from .artistic_pattern_gen import create_rectangle, create_circle, create_triangle, goal_generation, euclidean_dist
+from .artistic_pattern_gen import create_rectangle, create_circle,create_triangle, goal_generation, euclidean_dist, create_star
 from .turtlebot import ArtisticTurtleBot as Turtlebot
 
 
 class ArtisticPatternController(Node):
-    def __init__(self, robot_names: List[str], patterns: Dict[str, Polygon]):
+    def __init__(self, robot_names: List[str], goal_positions: Dict[str, Polygon]):
         """
         :param robot_names : A list of robot names
         :param patterns    : A dict with the names and polygons of patterns
         """
         super().__init__("artistic_pattern_controller")
-        self.max_angular_speed = 0.6
+        self.max_angular_speed = 0.5
         self.max_linear_speed = 0.6 # TODO: get turtlebot max speed
         self.targets_set = False
         self.seconds = 0
         self.last_seconds = 0
 
         # make an endless cycling iterator for the patterns
-        self.pattern_names = cycle(patterns.keys())
-        self.patterns = patterns
+        self.pattern_names = cycle(goal_positions.keys())
+        self.goal_positions = goal_positions
 
         # init turtlebot objects
         self.robot_names = robot_names
@@ -136,10 +136,12 @@ class ArtisticPatternController(Node):
         # Define variables for simulation
         time_step = 1/60. # really irrelevant
         max_neighbor_dist = 0.5
-        max_neighbors = 5 # must be higher with many close robots, but takes longer
+        # NOTE: We can probably equal max_neighbors to the number of robots, 
+        # the RVO2 simulation should not be the bottleneck
+        max_neighbors = len(self.robot_names) - 1 # must be higher with many close robots, but takes longer
         time_horizon = 0.5
         time_horizon_obst = 2
-        agent_radius = 0.5 # TODO: get turtlebot radius
+        agent_radius = 0.7 # TODO: get turtlebot radius
         max_speed = self.max_linear_speed
 
         self.sim = rvo2.PyRVOSimulator(
@@ -178,10 +180,7 @@ class ArtisticPatternController(Node):
         t1 = time.time()
         # use next pattern
         pattern_name = next(self.pattern_names)
-        pattern = self.patterns[pattern_name]
-
-        self.get_logger().info("Computing goal positions for {}".format(pattern_name))
-        goal_positions = goal_generation(pattern, len(self.robots))
+        goal_positions = self.goal_positions[pattern_name]
 
         # create distance matrix
         n = len(self.robot_names)
@@ -429,29 +428,6 @@ class ArtisticPatternController(Node):
                 # unset previous targets
                 self.reset_robots()
 
-def create_patterns():
-    circle_center = (-3, -3)
-    circle_radius = 1.0
-    circle_polygon = create_circle(circle_center, circle_radius)
-
-    # Create a triangle
-    triangle_vertices = [(-1.0, -1.0), (1.0, -1.0), (0.0, 1.0)]
-    triangle_polygon = create_triangle(triangle_vertices)
-
-    # Create a rectangle
-    rectangle_lower_left = (2.0, 2.0)
-    rectangle_upper_right = (3.5, 3.5)
-    rectangle_polygon = create_rectangle(rectangle_lower_left, rectangle_upper_right)
-
-    patterns = {
-        'circle': circle_polygon,
-        'triangle': triangle_polygon,
-        'rectangle': rectangle_polygon
-    }
-
-    return patterns
-
-
 def main():
     rclpy.init()
 
@@ -460,10 +436,15 @@ def main():
     robots = [robot['name'] for robot in robots]
 
     # target patterns
-    patterns = create_patterns()
+    goal_positions = os.environ.get("TARGET_POSITIONS")
+
+    if goal_positions is not None:
+        goal_positions = json.loads(goal_positions)
+    else:
+        raise ValueError("No target patterns in environment")
 
     # Initialize target assignement controller
-    tac = ArtisticPatternController(robots, patterns)
+    tac = ArtisticPatternController(robots, goal_positions)
 
     rclpy.spin(tac)
     rclpy.shutdown()

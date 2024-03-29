@@ -19,3 +19,10 @@ if [ -f "$file_path" ]; then
 else
 	echo "No json file for ${num_robots} robots"
 fi
+
+
+# export goal positions
+patterns_file="${num_robots}robots_patterns.json"
+patterns_path="pattern_gen/patterns/${patterns_file}"
+target_pos=$(<"$patterns_path")
+export TARGET_POSITIONS="$target_pos"

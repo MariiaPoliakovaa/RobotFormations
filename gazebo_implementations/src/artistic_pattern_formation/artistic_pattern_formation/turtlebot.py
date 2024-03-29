@@ -35,7 +35,7 @@ class ArtisticTurtleBot(Turtlebot):
         #    print(factor)
 
             # reduce Vp the closer the initial position is to the goal
-            Vp *= factor**2
+            Vp *= factor
 
         # Make vectors for position and goal
         position_v = np.array([position.x, position.y])
@@ -47,12 +47,12 @@ class ArtisticTurtleBot(Turtlebot):
         # calculate preferred speed
         preferred_speed = Vp * np.min(np.array([
             1,
-            position.distance_to(goal) / K
+            (position.distance_to(goal) / K)
         ]))
 
         # reduce speed if starting position is close to it's target
         # clip minimum speed to 0.1 (Not originally part of the algorithm)
-        preferred_speed = preferred_speed if preferred_speed > 0.1 else 0.1
+        preferred_speed = preferred_speed if preferred_speed > 0.05 else 0.05
 
         # calculate preferred velocity
         preferred_velocity = preferred_speed * (goal_v - position_v) / position.distance_to(goal)
