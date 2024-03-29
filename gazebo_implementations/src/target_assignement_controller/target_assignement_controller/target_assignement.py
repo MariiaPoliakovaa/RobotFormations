@@ -42,7 +42,7 @@ def greatest_distance_to_nearest_target(robots: Set[Turtlebot], targets: Set[Poi
 
 
 
-def target_assignement_strategy(robots: List[Turtlebot], targets: List[Point], prio:str="increasing") -> Set[Turtlebot]:
+def target_assignement_strategy(robots: List[Turtlebot], targets: List[list], prio:str="increasing") -> Set[Turtlebot]:
     """
     Assignes targets and priorities to robots.
     Uses either the first or second algorithm. The first algorithm initializes the priority as one and increases it
@@ -54,6 +54,7 @@ def target_assignement_strategy(robots: List[Turtlebot], targets: List[Point], p
 
     :returns      : Set of robots with assigned targets
     """
+    targets = [Point(target[0], target[1]) for target in targets]
 
     # check if number of robots equals number of targets
     if len(robots) != len(targets):

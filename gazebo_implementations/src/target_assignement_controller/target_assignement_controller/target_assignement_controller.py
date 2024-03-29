@@ -1,31 +1,62 @@
 import rclpy
+import json
+import os
+import csv
 import time
 import numpy as np
 
 from copy import deepcopy
+from pathlib import Path
 
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy, LivelinessPolicy
+from rosgraph_msgs.msg import Clock
 from rclpy.subscription import Subscription
 from rclpy.publisher import Publisher
 from geometry_msgs.msg import Pose
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 
+from itertools import cycle
 from typing import List, Dict
 
-from .turtlebot import Turtlebot, Point
+from turtlebot_controller.turtlebot_controller import Point
+from .turtlebot import TargetAssignementTurtlebot as Turtlebot
 from .target_assignement import target_assignement_strategy
+
+BASE_DIR = Path(__file__).resolve().parents[6]
+
+def append_to_csv(filename, data):
+    file_exists = os.path.exists(filename)
+
+    if not file_exists:
+        # create file
+        with open(filename, 'w') as f:
+            pass
+
+    with open(filename, 'a', newline='') as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            # If the file doesn't exist, write the header
+            writer.writerow(['Pattern', 'Time'])  # Example header
+        writer.writerow(data)
 
 
 class TargetAssignementController(Node):
-    def __init__(self, robot_names: List[str], targets):
+    def __init__(self, robot_names: List[str], goal_positions: Dict[str, list]):
         super().__init__("target_assignement_controller")
         max_angular_speed = 0.5
         max_linear_speed = 0.5
         deadzone_radius = 0.5 # I need to work out a useful value for this
 
         self.targets_set = False
-        self.targets = targets
+        self.seconds = 0
+        self.timing_path = Path(BASE_DIR, 'timing', 'target_assignement.csv')
+        if os.path.exists(self.timing_path):
+            os.remove(self.timing_path)
+
+        self.pattern_names = cycle(goal_positions.keys())
+        self.goal_positions = goal_positions
 
         # init turtlebot objects
         self.robot_names = robot_names
@@ -39,7 +70,6 @@ class TargetAssignementController(Node):
         self.odom_subscriptions = self.init_subscriptions(robot_names)
         self.twist_publishers = self.init_twist_publishers(robot_names)
 
-
     def all_positions_set(self):
         """
         Returns True if all turtlebots have their
@@ -51,8 +81,7 @@ class TargetAssignementController(Node):
                 positions_set = False
         return positions_set
 
-
-    def assign_targets_prios(self, targets: List[Point]):
+    def assign_targets_prios(self):
         """
         Use Use target assignement startegy to assign
         targets to the turtlebots
@@ -60,11 +89,16 @@ class TargetAssignementController(Node):
         # get all the turtlebots
         turtlebots = list(self.robots.values())
 
+        # get the current pattern
+        pattern_name = next(self.pattern_names)
+        self.pattern_name = pattern_name
+        goal_positions = self.goal_positions[pattern_name]
+
         # assign targets to the turtlebots
         prio_direction = 'increasing'
         turtlebots_assigned = target_assignement_strategy(
             turtlebots,
-            targets,
+            goal_positions,
             prio_direction
         )
 
@@ -115,8 +149,73 @@ class TargetAssignementController(Node):
                 10
             )
             subscriptions.append(subscription)
+
+        # I need to specifically set the profile, wont work otherwise
+        clock_qos_profile = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_ALL,
+            durability=DurabilityPolicy.VOLATILE,
+        )
+
+        # subscribe to time message from gazebo
+        time_subscription = self.create_subscription(
+            Clock,
+            '/clock',
+            self.timer_callback,
+            clock_qos_profile
+        )
         return subscriptions
 
+    def timer_callback(self, time_msg):
+        """
+        Updates the time based on /clock messages from gazebo
+        """
+        self.last_seconds = self.seconds
+        self.seconds = time_msg.clock.sec + time_msg.clock.nanosec / 1e9
+
+    def robots_correctly_oriented(self):
+        """
+        Returns true if all robots are correctly oriented
+        """
+        correctly_oriented = True
+
+        for robot in self.robots.values():
+            if not robot.correctly_oriented:
+                correctly_oriented = False
+
+        return correctly_oriented
+
+    def targets_assigned(self):
+        """
+        Returns True if all robots have their target assigned,
+        else False
+        """
+        assigned = True
+        for robot in self.robots.values():
+            if robot.target is None:
+                assigned = False
+        return assigned
+
+    def pattern_achieved(self) -> bool:
+        """
+        Returns True if each robot has reached its goal position,
+        otherwise False
+        """
+        done = True
+        for robot_name, robot in self.robots.items():
+            if not robot.reached_target():
+                done = False
+        return done
+
+    def reset_robots(self):
+        """
+        Unsets the targets for all robots
+        """
+        for robot in self.robots.values():
+            robot.target = None
+            robot.stop_moving()
+            robot.initial_position = None
+        self.targets_set = False
 
     def check_deadzones(self, robot: Turtlebot):
         """
@@ -125,18 +224,24 @@ class TargetAssignementController(Node):
         If there is one, the turtlebot with the lower
         priority is stopped
         """
+        robot.unpause()
+
         for other_robot in self.robots.values():
             if robot.in_deadzone(other_robot) and (robot.name != other_robot.name):
-                self.get_logger().info(f"{other_robot.name} in {robot.name}'s deadzone")
-
                 dist = robot.position.distance_to(other_robot.position)
-                self.get_logger().info(f"distance: {dist}")
 
                 if robot.priority < other_robot.priority:
-                    robot.stop_moving()
+                    robot.pause()
                 else:
-                    other_robot.stop_moving()
+                    other_robot.pause()
 
+    def log_timing(self):
+        """
+        Writes the current timing of the current
+        formation to csv file
+        """
+        data = [self.pattern_name, "{:.2f}".format(self.seconds)]
+        append_to_csv(self.timing_path, data)
 
     def odom_callback(self, odom_msg: Odometry, robot_name: str):
         """
@@ -146,8 +251,9 @@ class TargetAssignementController(Node):
         # if positions are not yet assigned and all robot positions were
         # received
         if not self.targets_set and self.all_positions_set():
-            self.robots = self.assign_targets_prios(self.targets)
+            self.robots = self.assign_targets_prios()
             self.targets_set = True
+            self.log_timing()
 
         # get the robot
         robot = self.robots[robot_name]
@@ -167,15 +273,16 @@ class TargetAssignementController(Node):
         if robot.target is not None and not robot.reached_target():
 
             # rotate it towards its target
-            twist_msg, correctly_oriented = robot.rotate_to_target(odom_msg, twist_msg)
+            twist_msg = robot.rotate_to_target(odom_msg, twist_msg)
 
             # if it aim towards its target start moving
-            if correctly_oriented:
+            if self.robots_correctly_oriented():
                 robot.start_moving()
 
             # check if there is another robot in this robots deadzone
             # if there is, stop the one with the lower priority
-            self.check_deadzones(robot)
+            if self.all_positions_set():
+                self.check_deadzones(robot)
 
             # if the robot is supposed to run and has not reached its target
             if robot.run == True:
@@ -184,38 +291,31 @@ class TargetAssignementController(Node):
         # publish twist message
         twist_publisher.publish(twist_msg)
 
+        # if pattern is achieved, start next pattern
+        if self.targets_assigned():
+            if self.pattern_achieved():
+                self.get_logger().info("Next pattern")
 
-def circle_positions(n: int, radius: float) -> List[Point]:
-    """
-    Generates evenly spaced points on a circle
-
-    :param n      : number of points
-    :param radius : radius of the circle
-
-    :returns      : List of points on a circle
-    """
-    points = []
-
-    for theta in np.linspace(0, 2*np.pi, n+1):
-        x = radius * np.cos(theta)
-        y = radius * np.sin(theta)
-        points.append(Point(x, y))
-
-    return points[:-1]
-
+                # unset previous targets
+                self.reset_robots()
 
 def main():
     rclpy.init()
 
-    # robot names
-    robots = ['Tony', 'Jacky', 'Andreas', 'Susan', 'Pikachu', 'Brudi']
-              #'DarthVader', 'Lisa', 'Gertrude']
+    # get robots
+    robots = json.loads(os.environ.get("ROBOTS"))
+    robots = [robot['name'] for robot in robots]
 
     # Initialize target positions
-    target_positions = circle_positions(len(robots), 1.3)
+    goal_positions = os.environ.get("TARGET_POSITIONS")
+
+    if goal_positions is not None:
+        goal_positions = json.loads(goal_positions)
+    else:
+        raise ValueError("No target patterns in environment")
 
     # Initialize target assignement controller
-    tac = TargetAssignementController(robots, target_positions)
+    tac = TargetAssignementController(robots, goal_positions)
 
     rclpy.spin(tac)
     rclpy.shutdown()
