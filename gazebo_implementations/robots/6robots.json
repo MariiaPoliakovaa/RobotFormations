@@ -1,0 +1,39 @@
+[
+    {
+        "name": "robot1",
+        "x": 0.0,
+        "y": 0.0,
+        "orientation": 1.0
+    },
+    {
+        "name": "robot2",
+        "x": 0.0,
+        "y": 1.0,
+        "orientation": 1.0
+    },
+    {
+        "name": "robot3",
+        "x": 0.0,
+        "y": 2.0,
+        "orientation": 1.5
+    },
+    {
+        "name": "robot4",
+        "x": 1.0,
+        "y": 0.0,
+        "orientation": 1.0
+    },
+    {
+        "name": "robot5",
+        "x": 1.0,
+        "y": 1.0,
+        "orientation": 1.0
+    },
+    {
+        "name": "robot6",
+        "x": 1.0,
+        "y": 2.0,
+        "orientation": 1.5
+    }
+]
+
