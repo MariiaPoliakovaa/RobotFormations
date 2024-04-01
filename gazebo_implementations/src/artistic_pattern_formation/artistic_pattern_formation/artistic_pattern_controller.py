@@ -1,4 +1,5 @@
 import rclpy
+import csv
 import ipdb
 import rvo2
 import yaml
@@ -30,6 +31,23 @@ from turtlebot_controller.turtlebot_controller import Point
 from .artistic_pattern_gen import create_rectangle, create_circle,create_triangle, goal_generation, euclidean_dist, create_star
 from .turtlebot import ArtisticTurtleBot as Turtlebot
 
+BASE_DIR = Path(__file__).resolve().parents[6]
+
+def append_to_csv(filename, data):
+    file_exists = os.path.exists(filename)
+
+    if not file_exists:
+        # create file
+        with open(filename, 'w') as f:
+            pass
+
+    with open(filename, 'a', newline='') as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            # If the file doesn't exist, write the header
+            writer.writerow(['Pattern', 'Time'])  # Example header
+        writer.writerow(data)
+
 
 class ArtisticPatternController(Node):
     def __init__(self, robot_names: List[str], goal_positions: Dict[str, Polygon]):
@@ -43,6 +61,7 @@ class ArtisticPatternController(Node):
         self.targets_set = False
         self.seconds = 0
         self.last_seconds = 0
+        self.timing_path = Path(BASE_DIR, 'timing', 'artistic_pattern_gen.csv')
 
         # make an endless cycling iterator for the patterns
         self.pattern_names = cycle(goal_positions.keys())
@@ -180,6 +199,7 @@ class ArtisticPatternController(Node):
         t1 = time.time()
         # use next pattern
         pattern_name = next(self.pattern_names)
+        self.pattern_name = pattern_name
         goal_positions = self.goal_positions[pattern_name]
 
         # create distance matrix
@@ -223,6 +243,14 @@ class ArtisticPatternController(Node):
             if robot.position is None or robot.initial_position is None:
                 positions_set = False
         return positions_set
+
+    def log_timing(self):
+        """
+        Writes the current timing of the current
+        formation to csv file
+        """
+        data = [self.pattern_name, "{:.2f}".format(self.seconds)]
+        append_to_csv(self.timing_path, data)
 
     def pattern_achieved(self) -> bool:
         """
@@ -371,6 +399,9 @@ class ArtisticPatternController(Node):
             # start the RVO2 simulation
             self.init_simulation()
             self.targets_set = True
+
+            # log pattern start time
+            self.log_timing()
 
         # get the robot
         robot = self.robots[robot_name]
