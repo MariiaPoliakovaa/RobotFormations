@@ -5,6 +5,7 @@ import csv
 import time
 import numpy as np
 
+from datetime import datetime
 from copy import deepcopy
 from pathlib import Path
 
@@ -51,9 +52,10 @@ class TargetAssignementController(Node):
 
         self.targets_set = False
         self.seconds = 0
-        self.timing_path = Path(BASE_DIR, 'timing', 'target_assignement.csv')
-        if os.path.exists(self.timing_path):
-            os.remove(self.timing_path)
+        # set up timing logfile
+        current_timestamp = datetime.now().strftime("%Y_%m_%d:%H_%M_%S")
+        timing_file = 'target_assignement_{}.csv'.format(current_timestamp)
+        self.timing_path = Path(BASE_DIR, 'timing', timing_file)
 
         self.pattern_names = cycle(goal_positions.keys())
         self.goal_positions = goal_positions
@@ -266,6 +268,10 @@ class TargetAssignementController(Node):
             odom_msg.pose.pose.position.x,
             odom_msg.pose.pose.position.y
         )
+
+        # Save initial position
+        if robot.initial_position is None:
+            robot.initial_position = robot.position
 
         twist_msg = Twist()
 

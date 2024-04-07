@@ -46,5 +46,43 @@ class TargetAssignementTurtlebot(Turtlebot):
         Sets the velocity of the turtlebot
         """
         if self.run and not self.paused:
-            twist_msg.linear.x = self.linear_speed
+            twist_msg.linear.x = self.preferred_velocity()
         return twist_msg
+
+    def preferred_velocity(self):
+        """
+        Computes the preferred speed for the provided robot
+
+        I used the same formula as artistic pattern generation,
+        without computing the velocity and using the 
+        maximum base speed as we don't need to speed up
+        """
+        position = self.position
+        initial_position = self.initial_position
+
+        # if the robot starts closer than this to the target
+        # reduce its preferred velocity
+        initial_dist_threhold = 1.0
+
+        # choose Vp to be the maximal speed
+        Vp = self.max_linear_speed
+
+        if initial_position.distance_to(self.target) < initial_dist_threhold:
+            factor = 1 - (initial_dist_threhold -
+                          initial_position.distance_to(self.target)) / initial_dist_threhold
+        #    print(factor)
+
+            # reduce Vp the closer the initial position is to the goal
+            Vp *= factor
+
+        # calculate K
+        K = initial_position.distance_to(self.target)
+
+        # calculate preferred speed
+        preferred_speed = Vp * np.min(np.array([
+            1,
+            (position.distance_to(self.target) / K)
+        ]))
+
+        return preferred_speed
+

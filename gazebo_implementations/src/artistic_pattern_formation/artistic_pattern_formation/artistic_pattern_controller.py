@@ -14,6 +14,7 @@ from pathlib import Path
 from shapely import Polygon
 from itertools import cycle
 from scipy.optimize import linear_sum_assignment
+from datetime import datetime
 
 from rclpy.node import Node
 from rclpy.subscription import Subscription
@@ -61,7 +62,11 @@ class ArtisticPatternController(Node):
         self.targets_set = False
         self.seconds = 0
         self.last_seconds = 0
-        self.timing_path = Path(BASE_DIR, 'timing', 'artistic_pattern_gen.csv')
+
+        # set up timing logfile
+        current_timestamp = datetime.now().strftime("%Y_%m_%d:%H_%M_%S")
+        timing_file = 'artistic_pattern_gen_{}.csv'.format(current_timestamp)
+        self.timing_path = Path(BASE_DIR, 'timing', timing_file)
 
         # make an endless cycling iterator for the patterns
         self.pattern_names = cycle(goal_positions.keys())
