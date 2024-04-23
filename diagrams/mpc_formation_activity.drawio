@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-04-23T20:16:39.400Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="FLTCxGtU_XhAiL7k3lWH" version="24.2.8" type="github">
+<mxfile host="app.diagrams.net" modified="2024-04-23T20:41:21.984Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="Mhx80LxglfhuCaZR4xG0" version="24.2.8" type="github">
   <diagram name="Page-1" id="YphFGga4iJxzyZlNxncv">
     <mxGraphModel dx="1364" dy="756" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -67,7 +67,7 @@
         <mxCell id="PN9PL7lnHLU8LkXzHzCx-9" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="275" y="410" width="50" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="PN9PL7lnHLU8LkXzHzCx-10" value="Zielpositionen gesetzt?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="PN9PL7lnHLU8LkXzHzCx-10" value="Zielpositionen zugewiesen?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="350" y="420" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="PN9PL7lnHLU8LkXzHzCx-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="PN9PL7lnHLU8LkXzHzCx-13" target="PN9PL7lnHLU8LkXzHzCx-17">
