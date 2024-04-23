@@ -1,9 +1,46 @@
-<mxfile host="app.diagrams.net" modified="2024-04-23T15:52:05.278Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" version="23.1.1" etag="zDWs4aw4D_N852idriiX" type="github">
+<mxfile host="app.diagrams.net" modified="2024-04-23T16:59:25.094Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="-cJYuEzmw6KzA450_Rr4" version="23.1.1" type="github">
   <diagram name="Page-1" id="zu-XLTcQg8C-OZv8aFZm">
-    <mxGraphModel>
+    <mxGraphModel dx="941" dy="521" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="kme5tt8VLKpU932-1tJq-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kme5tt8VLKpU932-1tJq-1" target="kme5tt8VLKpU932-1tJq-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kme5tt8VLKpU932-1tJq-1" value="Odometry Nachricht erhalten" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.start_2;whiteSpace=wrap;verticalAlign=middle;labelPosition=center;verticalLabelPosition=top;align=center;spacingTop=-7;" vertex="1" parent="1">
+          <mxGeometry x="420" y="80" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kme5tt8VLKpU932-1tJq-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kme5tt8VLKpU932-1tJq-2" target="kme5tt8VLKpU932-1tJq-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kme5tt8VLKpU932-1tJq-8" value="Ja" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="kme5tt8VLKpU932-1tJq-7">
+          <mxGeometry x="-0.3619" y="-2" relative="1" as="geometry">
+            <mxPoint x="-7" y="-2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kme5tt8VLKpU932-1tJq-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kme5tt8VLKpU932-1tJq-2" target="kme5tt8VLKpU932-1tJq-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kme5tt8VLKpU932-1tJq-11" value="Nein" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="kme5tt8VLKpU932-1tJq-10">
+          <mxGeometry x="-0.2696" y="2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kme5tt8VLKpU932-1tJq-2" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=right;verticalLabelPosition=middle;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="412.5" y="220" width="55" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="kme5tt8VLKpU932-1tJq-3" value="Alle Roboter-Positionen empfangen?" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="440" y="190" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kme5tt8VLKpU932-1tJq-4" value="Zielpositionen noch nicht gesetzt?" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="295" y="190" width="145" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kme5tt8VLKpU932-1tJq-6" value="Ziele und Prioritaten&lt;br&gt;setzen" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="590" y="220" width="90" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="kme5tt8VLKpU932-1tJq-9" value="Roboter Position&lt;br&gt;auslesen" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="222.5" width="100" height="45" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
