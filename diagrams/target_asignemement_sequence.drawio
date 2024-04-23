@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2024-04-23T17:50:42.984Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="Xn71coNCWPR2n-P0WirS" version="24.2.8" type="github">
+<mxfile host="app.diagrams.net" modified="2024-04-23T19:48:33.789Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="4EEeHEYV2gLk-FVqPlqx" version="24.2.8" type="github">
   <diagram name="Page-1" id="zu-XLTcQg8C-OZv8aFZm">
-    <mxGraphModel dx="1091" dy="605" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1364" dy="756" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -80,8 +80,10 @@
         <mxCell id="apsvOl90LSxVhNFeAMtb-20" value="Orientierung vom&lt;br&gt;Roboter auslesen" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="390" y="560" width="100" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-22" target="apsvOl90LSxVhNFeAMtb-24">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-22" target="apsvOl90LSxVhNFeAMtb-48">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="607.5" y="760" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="apsvOl90LSxVhNFeAMtb-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-22" target="apsvOl90LSxVhNFeAMtb-27">
           <mxGeometry relative="1" as="geometry" />
@@ -89,11 +91,10 @@
         <mxCell id="apsvOl90LSxVhNFeAMtb-22" value="Winkel zur Zielposition berechnen" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="390" y="640" width="100" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-24" target="apsvOl90LSxVhNFeAMtb-46">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-24" value="Twist&lt;div&gt;Message&lt;/div&gt;" style="shape=parallelogram;html=1;strokeWidth=2;perimeter=parallelogramPerimeter;whiteSpace=wrap;rounded=1;arcSize=12;size=0.23;" vertex="1" parent="1">
-          <mxGeometry x="567.5" y="760" width="80" height="50" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-48" target="apsvOl90LSxVhNFeAMtb-46">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="638.3" y="785" as="sourcePoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="apsvOl90LSxVhNFeAMtb-26" value="Winkel in Twist-Nachricht schreiben" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="520" y="630" width="175" height="30" as="geometry" />
@@ -109,8 +110,9 @@
         <mxCell id="apsvOl90LSxVhNFeAMtb-27" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="412.5" y="730" width="55" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-42" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-29" target="apsvOl90LSxVhNFeAMtb-24">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-42" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-29" target="apsvOl90LSxVhNFeAMtb-48">
           <mxGeometry relative="1" as="geometry">
+            <mxPoint x="607.5" y="810" as="targetPoint" />
             <Array as="points">
               <mxPoint x="440" y="1050" />
               <mxPoint x="607" y="1050" />
@@ -172,6 +174,9 @@
         </mxCell>
         <mxCell id="apsvOl90LSxVhNFeAMtb-46" value="Twist-Nachricht an Roboter senden" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeWidth=2;shape=mxgraph.arrows2.arrow;dy=0.6;dx=40;notch=0;" vertex="1" parent="1">
           <mxGeometry x="695" y="760" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-48" value="Twist&lt;div&gt;Message&lt;/div&gt;" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.direct_data;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="565" y="760" width="85" height="50" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
