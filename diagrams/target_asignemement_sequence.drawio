@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-04-25T17:08:43.645Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="z0TMebwFfLLxGE-xX-gH" version="24.2.8" type="github">
+<mxfile host="app.diagrams.net" modified="2024-04-25T17:21:11.501Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="V-25g5QRqH2zMPcceAUO" version="24.2.8" type="github">
   <diagram name="Page-1" id="zu-XLTcQg8C-OZv8aFZm">
     <mxGraphModel dx="1364" dy="756" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -8,11 +8,11 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="kme5tt8VLKpU932-1tJq-1" value="Odometry Nachricht erhalten" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.start_2;whiteSpace=wrap;verticalAlign=middle;labelPosition=center;verticalLabelPosition=top;align=center;spacingTop=-7;" parent="1" vertex="1">
-          <mxGeometry x="420" y="180" width="40" height="40" as="geometry" />
+          <mxGeometry x="400" y="50" width="40" height="40" as="geometry" />
         </mxCell>
         <mxCell id="kme5tt8VLKpU932-1tJq-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="kme5tt8VLKpU932-1tJq-2" target="apsvOl90LSxVhNFeAMtb-9" edge="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="580" y="305" as="targetPoint" />
+            <mxPoint x="560" y="175" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="kme5tt8VLKpU932-1tJq-8" value="Ja" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="kme5tt8VLKpU932-1tJq-7" vertex="1" connectable="0">
@@ -29,178 +29,237 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="kme5tt8VLKpU932-1tJq-2" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=right;verticalLabelPosition=middle;align=left;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="412.5" y="280" width="55" height="50" as="geometry" />
+          <mxGeometry x="392.5" y="150" width="55" height="50" as="geometry" />
         </mxCell>
         <mxCell id="kme5tt8VLKpU932-1tJq-3" value="Alle Roboter-Positionen empfangen?" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="440" y="250" width="140" height="30" as="geometry" />
+          <mxGeometry x="420" y="120" width="140" height="30" as="geometry" />
         </mxCell>
         <mxCell id="kme5tt8VLKpU932-1tJq-4" value="Zielpositionen noch nicht gesetzt?" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="295" y="250" width="145" height="30" as="geometry" />
+          <mxGeometry x="275" y="120" width="145" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="kme5tt8VLKpU932-1tJq-6" target="kme5tt8VLKpU932-1tJq-9">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="kme5tt8VLKpU932-1tJq-6" target="kme5tt8VLKpU932-1tJq-9" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="kme5tt8VLKpU932-1tJq-6" value="Ziele und Prioritaten&lt;br&gt;zuweisen" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="605" y="367.5" width="90" height="50" as="geometry" />
+          <mxGeometry x="585" y="237.5" width="90" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kme5tt8VLKpU932-1tJq-9" target="apsvOl90LSxVhNFeAMtb-12">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="kme5tt8VLKpU932-1tJq-9" target="apsvOl90LSxVhNFeAMtb-12" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="kme5tt8VLKpU932-1tJq-9" value="Roboter Position&lt;br&gt;auslesen" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="390" y="370" width="100" height="45" as="geometry" />
+          <mxGeometry x="370" y="240" width="100" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-9" target="kme5tt8VLKpU932-1tJq-6">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="apsvOl90LSxVhNFeAMtb-9" target="kme5tt8VLKpU932-1tJq-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-9" value="Zielpositionen der nachsten Formation auslesen" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="590" y="280" width="120" height="50" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-9" value="Zielpositionen der nachsten Formation auslesen" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="570" y="150" width="120" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-12" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=right;verticalLabelPosition=middle;align=left;verticalAlign=middle;" vertex="1" parent="1">
-          <mxGeometry x="412.5" y="460" width="55" height="50" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-12" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=right;verticalLabelPosition=middle;align=left;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="392.5" y="330" width="55" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-14" value="Hat der Roboter eine Zielposition?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="313.5" y="440" width="108" height="30" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-14" value="Hat der Roboter eine Zielposition?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="293.5" y="310" width="108" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-15" value="Hat der Roboter seine Zielposition nicht erreicht?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="450" y="440" width="180" height="30" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-15" value="Hat der Roboter seine Zielposition nicht erreicht?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="430" y="310" width="180" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-12" target="apsvOl90LSxVhNFeAMtb-20">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="apsvOl90LSxVhNFeAMtb-12" target="apsvOl90LSxVhNFeAMtb-20" edge="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="440" y="567.5" as="targetPoint" />
+            <mxPoint x="420" y="437.5" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-19" value="Ja" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="apsvOl90LSxVhNFeAMtb-18">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-19" value="Ja" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="apsvOl90LSxVhNFeAMtb-18" vertex="1" connectable="0">
           <mxGeometry x="-0.284" y="3" relative="1" as="geometry">
             <mxPoint x="-3" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-20" target="apsvOl90LSxVhNFeAMtb-22">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="apsvOl90LSxVhNFeAMtb-20" target="apsvOl90LSxVhNFeAMtb-22" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-20" value="Orientierung vom&lt;br&gt;Roboter auslesen" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="390" y="560" width="100" height="45" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-20" value="Orientierung vom&lt;br&gt;Roboter auslesen" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="370" y="420" width="100" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-22" target="apsvOl90LSxVhNFeAMtb-27">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="apsvOl90LSxVhNFeAMtb-22" target="apsvOl90LSxVhNFeAMtb-54" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-22" target="apsvOl90LSxVhNFeAMtb-54">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-22" value="Winkel zur Zielposition berechnen" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="370" y="490" width="100" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-22" value="Winkel zur Zielposition berechnen" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="390" y="640" width="100" height="45" as="geometry" />
-        </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-48" target="apsvOl90LSxVhNFeAMtb-46">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="apsvOl90LSxVhNFeAMtb-48" target="apsvOl90LSxVhNFeAMtb-46" edge="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="675.3" y="785" as="sourcePoint" />
+            <mxPoint x="685.3" y="655" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-27" target="apsvOl90LSxVhNFeAMtb-30">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="apsvOl90LSxVhNFeAMtb-27" target="apsvOl90LSxVhNFeAMtb-30" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-34" value="Ja" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="apsvOl90LSxVhNFeAMtb-33">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-34" value="Ja" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="apsvOl90LSxVhNFeAMtb-33" vertex="1" connectable="0">
           <mxGeometry x="-0.5417" y="1" relative="1" as="geometry">
             <mxPoint x="-1" y="1" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-27" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" vertex="1" parent="1">
-          <mxGeometry x="412.5" y="730" width="55" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-29" target="apsvOl90LSxVhNFeAMtb-51">
+        <mxCell id="RljCTciCHaUuFa0GFH6g-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-27" target="RljCTciCHaUuFa0GFH6g-2">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-29" target="apsvOl90LSxVhNFeAMtb-59">
+        <mxCell id="RljCTciCHaUuFa0GFH6g-8" value="Nein" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="RljCTciCHaUuFa0GFH6g-5">
+          <mxGeometry x="-0.6809" y="-2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-27" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="392.5" y="600" width="55" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="apsvOl90LSxVhNFeAMtb-29" target="apsvOl90LSxVhNFeAMtb-59" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-29" value="Geschwindigkeit berechnen" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="390" y="980" width="100" height="45" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-29" value="Geschwindigkeit berechnen" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="500" y="772.5" width="100" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-30" target="apsvOl90LSxVhNFeAMtb-35">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="apsvOl90LSxVhNFeAMtb-30" target="apsvOl90LSxVhNFeAMtb-35" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-38" value="Ja" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="apsvOl90LSxVhNFeAMtb-36">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-38" value="Ja" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="apsvOl90LSxVhNFeAMtb-36" vertex="1" connectable="0">
           <mxGeometry x="0.2152" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-30" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" vertex="1" parent="1">
-          <mxGeometry x="412.5" y="820" width="55" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-31" value="&lt;span style=&quot;text-align: right;&quot;&gt;Ist der Roboter richtig ausgerichtet?&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="282" y="740" width="138" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-32" value="Ist der Roboter in der Deadzone eines anderen Roboters?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="468.75" y="830" width="82.5" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-35" target="apsvOl90LSxVhNFeAMtb-29">
+        <mxCell id="RljCTciCHaUuFa0GFH6g-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-30" target="apsvOl90LSxVhNFeAMtb-29">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-35" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" vertex="1" parent="1">
-          <mxGeometry x="412.5" y="900" width="55" height="50" as="geometry" />
+        <mxCell id="RljCTciCHaUuFa0GFH6g-16" value="Nein" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="RljCTciCHaUuFa0GFH6g-15">
+          <mxGeometry x="-0.8702" y="-4" relative="1" as="geometry">
+            <mxPoint x="8" y="-4" as="offset" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-37" value="Hat der Roboter eine hohere Prio&lt;br&gt;als der andere Roboter?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="467.5" y="910" width="80" height="30" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-30" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="392.5" y="680" width="55" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-44" value="Auf nachste Odomety Nachricht warten" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.terminator;whiteSpace=wrap;labelPosition=center;verticalLabelPosition=top;align=center;verticalAlign=bottom;" vertex="1" parent="1">
-          <mxGeometry x="134" y="462.5" width="72" height="45" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-31" value="&lt;span style=&quot;text-align: right;&quot;&gt;Ist der Roboter richtig ausgerichtet?&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="451" y="610" width="138" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-12" target="apsvOl90LSxVhNFeAMtb-44">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-32" value="Ist der Roboter in der Deadzone eines anderen Roboters?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="306.25" y="690" width="82.5" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="RljCTciCHaUuFa0GFH6g-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-35" target="apsvOl90LSxVhNFeAMtb-29">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-46" value="An Roboter senden" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeWidth=2;shape=mxgraph.arrows2.arrow;dy=0.6;dx=40;notch=0;" vertex="1" parent="1">
-          <mxGeometry x="732" y="790" width="80" height="50" as="geometry" />
+        <mxCell id="RljCTciCHaUuFa0GFH6g-22" value="Ja" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="RljCTciCHaUuFa0GFH6g-21">
+          <mxGeometry x="-0.5619" y="-2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-48" value="Twist&lt;div&gt;Message&lt;/div&gt;" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.direct_data;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="602" y="790" width="85" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-63" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-51" target="apsvOl90LSxVhNFeAMtb-62">
+        <mxCell id="RljCTciCHaUuFa0GFH6g-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-35" target="RljCTciCHaUuFa0GFH6g-24">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-67" value="Ja" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="apsvOl90LSxVhNFeAMtb-63">
+        <mxCell id="RljCTciCHaUuFa0GFH6g-27" value="Nein" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="RljCTciCHaUuFa0GFH6g-26">
+          <mxGeometry x="0.2211" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-35" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="392.5" y="770" width="55" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-37" value="Hat der Roboter eine hohere Prio&lt;br&gt;als der andere Roboter?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="310.5" y="780" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-44" value="Auf nachste Odomety Nachricht warten" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.terminator;whiteSpace=wrap;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="114" y="332.5" width="72" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="apsvOl90LSxVhNFeAMtb-12" target="apsvOl90LSxVhNFeAMtb-44" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-46" value="An Roboter senden" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeWidth=2;shape=mxgraph.arrows2.arrow;dy=0.6;dx=40;notch=0;" parent="1" vertex="1">
+          <mxGeometry x="742" y="660" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-48" value="Twist&lt;div&gt;Message&lt;/div&gt;" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.direct_data;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="643" y="660" width="85" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-63" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="apsvOl90LSxVhNFeAMtb-51" target="apsvOl90LSxVhNFeAMtb-62" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-67" value="Ja" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="apsvOl90LSxVhNFeAMtb-63" vertex="1" connectable="0">
           <mxGeometry x="-0.0811" y="2" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-66" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-51" target="apsvOl90LSxVhNFeAMtb-64">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-66" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="apsvOl90LSxVhNFeAMtb-51" target="apsvOl90LSxVhNFeAMtb-64" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="303" y="890" />
+              <mxPoint x="283" y="780" />
             </Array>
+            <mxPoint x="210" y="790" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-68" value="Nein" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="apsvOl90LSxVhNFeAMtb-66">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-68" value="Nein" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="apsvOl90LSxVhNFeAMtb-66" vertex="1" connectable="0">
           <mxGeometry x="-0.7855" y="2" relative="1" as="geometry">
             <mxPoint y="1" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-51" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" vertex="1" parent="1">
-          <mxGeometry x="275.5" y="977.5" width="55" height="50" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-51" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="255.5" y="847.5" width="55" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-52" value="Hat jeder Roboter seine Zielposition erreicht?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="230" y="1060" width="146" height="30" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-52" value="Hat jeder Roboter seine Zielposition erreicht?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="210" y="920" width="146" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-56" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-54" target="apsvOl90LSxVhNFeAMtb-48">
+        <mxCell id="RljCTciCHaUuFa0GFH6g-29" style="edgeStyle=isometricEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-54" target="apsvOl90LSxVhNFeAMtb-27">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-54" value="Winkel in Twist-Nachricht schreiben" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="594.5" y="640" width="100" height="45" as="geometry" />
-        </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-61" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-59" target="apsvOl90LSxVhNFeAMtb-48">
+        <mxCell id="RljCTciCHaUuFa0GFH6g-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-54" target="apsvOl90LSxVhNFeAMtb-48">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-59" value="Geschwindigkeit in Twist-Nachricht schreiben" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="590" y="977.5" width="109" height="50" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-54" value="Winkel in Twist-Nachricht schreiben" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="635.5" y="490" width="100" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-65" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-62" target="apsvOl90LSxVhNFeAMtb-64">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-61" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" parent="1" source="apsvOl90LSxVhNFeAMtb-59" target="apsvOl90LSxVhNFeAMtb-48" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-62" value="Zielposition fur jeden Roboter zurucksetzen" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="120" y="980" width="100" height="45" as="geometry" />
+        <mxCell id="RljCTciCHaUuFa0GFH6g-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-59" target="RljCTciCHaUuFa0GFH6g-24">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="686" y="873" />
+            </Array>
+          </mxGeometry>
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-69" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-64" target="apsvOl90LSxVhNFeAMtb-44">
+        <mxCell id="apsvOl90LSxVhNFeAMtb-59" value="Geschwindigkeit in Twist-Nachricht schreiben" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="631" y="770" width="109" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-65" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="apsvOl90LSxVhNFeAMtb-62" target="apsvOl90LSxVhNFeAMtb-64" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="apsvOl90LSxVhNFeAMtb-64" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.flowchart.or;" vertex="1" parent="1">
-          <mxGeometry x="150" y="870" width="40" height="40" as="geometry" />
+        <mxCell id="apsvOl90LSxVhNFeAMtb-62" value="Zielposition fur jeden Roboter zurucksetzen" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="100" y="850" width="100" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="apsvOl90LSxVhNFeAMtb-64" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.flowchart.or;" parent="1" vertex="1">
+          <mxGeometry x="130" y="760" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="RljCTciCHaUuFa0GFH6g-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="RljCTciCHaUuFa0GFH6g-2" target="apsvOl90LSxVhNFeAMtb-44">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RljCTciCHaUuFa0GFH6g-2" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.flowchart.or;" vertex="1" parent="1">
+          <mxGeometry x="130" y="605" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="RljCTciCHaUuFa0GFH6g-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-44" target="kme5tt8VLKpU932-1tJq-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="150" y="70" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RljCTciCHaUuFa0GFH6g-11" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.flowchart.or;" vertex="1" parent="1">
+          <mxGeometry x="130" y="685" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="RljCTciCHaUuFa0GFH6g-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="apsvOl90LSxVhNFeAMtb-64" target="RljCTciCHaUuFa0GFH6g-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RljCTciCHaUuFa0GFH6g-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="RljCTciCHaUuFa0GFH6g-11" target="RljCTciCHaUuFa0GFH6g-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RljCTciCHaUuFa0GFH6g-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="RljCTciCHaUuFa0GFH6g-24" target="apsvOl90LSxVhNFeAMtb-51">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RljCTciCHaUuFa0GFH6g-24" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.flowchart.or;" vertex="1" parent="1">
+          <mxGeometry x="400" y="852.5" width="40" height="40" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
