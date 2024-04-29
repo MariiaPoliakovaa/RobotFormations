@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-04-29T11:27:14.159Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="Hkv8WCNrCp0FwmsJm2H6" version="24.3.0" type="github">
+<mxfile host="app.diagrams.net" modified="2024-04-29T11:38:10.405Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="fbrngfkk6Ij4PWw4LoD_" version="24.3.0" type="github">
   <diagram name="Page-1" id="idGvUbHHAdKnBgfPTjK5">
     <mxGraphModel dx="1364" dy="756" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -67,7 +67,7 @@
         <mxCell id="iu1sM_UNjtYUp8MbcKWh-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="iu1sM_UNjtYUp8MbcKWh-8" target="D4BRbFkFPm7MYHUp7HfA-30">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="iu1sM_UNjtYUp8MbcKWh-8" value="&lt;span style=&quot;font-size: 11px; text-wrap: nowrap; background-color: rgb(255, 255, 255);&quot;&gt;Zielpositionen durch&lt;br&gt;Mittelpunkte der Zellen&amp;nbsp;&lt;br&gt;ersetzen&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="iu1sM_UNjtYUp8MbcKWh-8" value="&lt;span style=&quot;font-size: 11px; text-wrap: nowrap; background-color: rgb(255, 255, 255);&quot;&gt;Zielpositionen durch&lt;br&gt;Schwerpunkte der Zellen&amp;nbsp;&lt;br&gt;ersetzen&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="370" y="552.5" width="130" height="75" as="geometry" />
         </mxCell>
         <mxCell id="iu1sM_UNjtYUp8MbcKWh-12" value="Fertige&lt;br&gt;Zielpositionen" style="shape=parallelogram;html=1;strokeWidth=2;perimeter=parallelogramPerimeter;whiteSpace=wrap;rounded=1;arcSize=12;size=0.23;" vertex="1" parent="1">
