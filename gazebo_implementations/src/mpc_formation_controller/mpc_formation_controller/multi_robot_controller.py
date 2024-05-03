@@ -377,7 +377,6 @@ def main():
     thread.start()
 
     controller.run()
-    #rclpy.spin(controller)
     rclpy.shutdown()
 
 if __name__ == "__main__":

@@ -29,7 +29,12 @@ class Point:
 
 
 class Turtlebot:
-    def __init__(self, name: str, max_angular_speed: float, max_linear_speed: float):
+    def __init__(self,
+                 name: str,
+                 max_angular_speed: float,
+                 max_linear_speed: float,
+                 max_delta_vel = 0.6,
+                 max_delta_omega = 1.5):
         self.name = name
         self.position = None
         self.initial_position = None
@@ -118,4 +123,7 @@ class Turtlebot:
 
         roll, pitch, yaw = euler_from_quaternion(quaternion)
 
-        return yaw % (2*np.pi)
+        # We need to subtract pi because the euler from quaternion
+        # function returns values in [0, 2*pi] and we want
+        # to have values in [-pi, pi]
+        return yaw % (2*np.pi) #- np.pi

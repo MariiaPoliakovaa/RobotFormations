@@ -1,5 +1,6 @@
 import rclpy
 import csv
+import threading
 import ipdb
 import rvo2
 import yaml
@@ -16,6 +17,7 @@ from itertools import cycle
 from scipy.optimize import linear_sum_assignment
 from datetime import datetime
 
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.subscription import Subscription
 from rclpy.publisher import Publisher
@@ -57,11 +59,14 @@ class ArtisticPatternController(Node):
         :param patterns    : A dict with the names and polygons of patterns
         """
         super().__init__("artistic_pattern_controller")
-        self.max_angular_speed = 0.5
-        self.max_linear_speed = 0.6 # TODO: get turtlebot max speed
+        self.max_angular_speed = 2.84
+        self.max_linear_speed = 0.22 # TODO: get turtlebot max speed
+        self.max_delta_velocity = 0.6
+        self.max_delta_omega = np.pi/2
         self.targets_set = False
         self.seconds = 0
         self.last_seconds = 0
+        self.sim = None
 
         # set up timing logfile
         current_timestamp = datetime.now().strftime("%Y_%m_%d:%H_%M_%S")
@@ -77,7 +82,9 @@ class ArtisticPatternController(Node):
         self.robots = {
             name: Turtlebot(name,
                             self.max_angular_speed,
-                            self.max_linear_speed
+                            self.max_linear_speed,
+                            self.max_delta_velocity,
+                            self.max_delta_omega
             ) for name in robot_names}
 
         # init targets for robots
@@ -87,85 +94,41 @@ class ArtisticPatternController(Node):
         self.odom_subscriptions = self.init_subscriptions(robot_names)
         self.twist_publishers = self.init_twist_publishers(robot_names)
 
-    def update_step(self):
+        # initialize start timer to start main loop after two seconds
+        #self.start_timer = self.create_timer(2, self.start_timer_callback)
+
+    def start_timer_callback(self):
         """
-        If all robot positions were updated at least once.
-
-        Update all agent positions in the simulation, do one step
-        and update all robots speed based on the simulation
+        This callback gets called executed by a timer shortly after
+        the node was initialized. This is needed because we need
+        to wait a moment for all robots to have published their
+        location.
+        This function starts the main loop of the Node
         """
-        # chech if all robots had their position updated,
-        # if not, quit the update step
-        update = True
-        for robot in self.robots.values():
-            if robot.updated is not True:
-                update = False
+        # cancel the timer to only execute once
+        self.start_timer.cancel()
 
-        if not update:
-            return
-
-        # set update flag to false
-        for robot in self.robots.values():
-            robot.updated = False
-
-        # update robot positions and preferred velocities
-        for name in self.robot_names:
-            agent = self.sim_agents[name]
-            robot = self.robots[name]
-
-            # update robot position
-            position = (robot.position.x, robot.position.y)
-            self.sim.setAgentPosition(agent, position)
-
-            # update simulation preferred velocity
-            goal = self.robot_goals[name]
-            preferred_speed, preferred_velocity = robot.preferred_velocity(goal)
-            self.sim.setAgentPrefVelocity(agent, preferred_velocity)
-
-            # update simulation robot velocity
-            self.sim.setAgentVelocity(agent, robot.velocity)
-
-        # set the time step of the simulation
-        time_delta = self.seconds - self.last_seconds
-        self.sim.setTimeStep(time_delta)
-
-        # do one simulation step
-        self.sim.doStep()
-
-        # update speed for each robot
-        for name in self.robot_names:
-            agent = self.sim_agents[name]
-            robot = self.robots[name]
-            goal = self.robot_goals[name]
-
-            velocity = self.sim.getAgentVelocity(agent)
-            speed = np.sqrt(velocity[0]**2 + velocity[1]**2)
-
-            # NOTE:
-            # if robot is close to target, clip it's speed to not overshoot
-            if robot.position.distance_to(goal) < 0.2:
-                preferred_speed, _ = robot.preferred_velocity(goal)
-                speed = preferred_speed
-
-            robot.linear_speed = speed
+        # run main loop
+        self.run()
 
 
-    def init_simulation(self):
+
+    def init_simulation(self, update_rate: int):
         """
         Initializes the RVO simulation. Must be executed after
         each robot has it's initial position
         """
-        self.get_logger().debug("Initializing simulation")
+        self.get_logger().info("Initializing simulation")
 
         # Define variables for simulation
-        time_step = 1/60. # really irrelevant
         max_neighbor_dist = 0.5
         # NOTE: We can probably equal max_neighbors to the number of robots, 
         # the RVO2 simulation should not be the bottleneck
+        time_step = 1/update_rate
         max_neighbors = len(self.robot_names) - 1 # must be higher with many close robots, but takes longer
-        time_horizon = 0.5
-        time_horizon_obst = 2
-        agent_radius = 0.7 # TODO: get turtlebot radius
+        time_horizon = 3
+        time_horizon_obst = 2 # doesnt matter, we have no obstacles
+        agent_radius = 0.5 # TODO: get turtlebot radius
         max_speed = self.max_linear_speed
 
         self.sim = rvo2.PyRVOSimulator(
@@ -188,7 +151,7 @@ class ArtisticPatternController(Node):
 
             # set preferred velocity for robot
             goal = self.robot_goals[robot_name]
-            _, preferred_velocity = robot.preferred_velocity(goal)
+            preferred_velocity = robot.preferred_velocity(goal)
             self.sim.setAgentPrefVelocity(agent, preferred_velocity)
 
             # save agent
@@ -201,11 +164,11 @@ class ArtisticPatternController(Node):
 
         :param pattern : The pattern used to generate target positions
         """
-        t1 = time.time()
         # use next pattern
         pattern_name = next(self.pattern_names)
         self.pattern_name = pattern_name
         goal_positions = self.goal_positions[pattern_name]
+        self.get_logger().info("Next pattern: {}".format(pattern_name))
 
         # create distance matrix
         n = len(self.robot_names)
@@ -233,10 +196,6 @@ class ArtisticPatternController(Node):
             robot.set_target(
                 self.robot_goals[robot_name]
             )
-
-        # calculate the elapsed time
-        t2 = time.time()
-        self.get_logger().info("Target assignement took {:.2f}s".format(t2-t1))
 
     def all_positions_assigned(self):
         """
@@ -352,6 +311,7 @@ class ArtisticPatternController(Node):
         for robot in self.robots.values():
             robot.target = None
             robot.stop_moving()
+            robot.correctly_oriented = False
             robot.initial_position = None
         self.targets_set = False
 
@@ -367,6 +327,95 @@ class ArtisticPatternController(Node):
 
         return correctly_oriented
 
+    def update_step(self):
+        """
+        Update all agent positions in the simulation, do one step
+        and update all robots speed based on the simulation
+        """
+        # update robot positions and preferred velocities
+        for name in self.robot_names:
+            agent = self.sim_agents[name]
+            robot = self.robots[name]
+
+            # update robot position
+            position = (robot.position.x, robot.position.y)
+            self.sim.setAgentPosition(agent, position)
+
+            # update simulation preferred velocity
+            goal = self.robot_goals[name]
+            preferred_velocity = robot.preferred_velocity(goal)
+            #self.get_logger().info(
+            #    "Preferred velocity: {}".format(str(preferred_velocity))
+            #)
+
+            # set preferred velocity
+            self.sim.setAgentPrefVelocity(agent, preferred_velocity)
+
+            # update simulation robot velocity
+            self.sim.setAgentVelocity(agent, robot.velocity)
+
+        # do one simulation step
+        self.sim.doStep()
+
+    def send_controll_signals(self, time_step: float):
+        """
+        For each robot: Sends the control signal to
+        the robot
+
+        :param time_step : Length of a simulation time step
+        """
+        for robot in self.robots.values():
+            # get the publisher corresponding to robot
+            twist_publisher = self.twist_publishers[robot.name]
+
+            # Initialize twist message
+            twist_msg = Twist()
+
+            # start moving if all robots are correctly oriented
+            if self.robots_correctly_oriented():
+                #self.get_logger().info("Robots correctly oriented")
+                robot.start_moving()
+
+            if not robot.run:
+                # rotate robot towards its target
+                twist_msg = robot.rotate_to_target(twist_msg)
+            elif robot.reached_target():
+                #self.get_logger().info("Stop moving")
+                robot.stop_moving()
+            else:
+                # get simulation agent
+                agent = self.sim_agents[robot.name]
+
+                # get target velocity of agent
+                velocity = self.sim.getAgentVelocity(agent)
+                #self.get_logger().info("Agent velocity: {}".format(str(velocity)))
+
+                # calculate target rotation and speed
+                target_speed = np.sqrt(velocity[0]**2 + velocity[1]**2)
+                target_rotation = np.arctan2(velocity[1], velocity[0]) % (2*np.pi)
+                target_rotation -= np.pi
+                robot_rotation = robot.w - np.pi
+
+                rotation_delta = target_rotation - robot_rotation
+
+                angular_vel = robot.angular_speed * rotation_delta/(2*np.pi)
+
+                #self.get_logger().info("------------")
+                #self.get_logger().info("Robot position: ({:.2f}, {:.2f})".format(robot.position.x,robot.position.y))
+                #self.get_logger().info("Robot target: ({:.2f}, {:.2f})".format(robot.target.x,robot.target.y))
+                #self.get_logger().info("Robot rotation: {:.2f}".format(robot_rotation))
+                #self.get_logger().info("Target rotation: {:.2f}".format(target_rotation))
+                #self.get_logger().info("Rotation delta: {:.2f}".format(rotation_delta))
+
+                # set values
+                twist_msg.linear.x = target_speed
+                twist_msg.angular.z = angular_vel
+
+
+            # publish twist message
+            twist_publisher.publish(twist_msg)
+
+
     def odom_callback(self, odom_msg: Odometry, robot_name: str):
         """
         Odometry callback to receive pose from the turtlebot and
@@ -377,92 +426,66 @@ class ArtisticPatternController(Node):
         I use the following repository:
             https://github.com/sybrenstuvel/Python-RVO2.git
         It provides python bindings for the RVO2 library.
-
-        The idea is to initialize the RVO2 simulation once the start and goal
-        positions for each robot are computed.
-        Then I can update the simulation step every time all robots had their
-        callback function executed and update the position in the simulation
-        for each robot and update the speed of each robot based on the
-        simulation.
-
-        1. Get position and goal for each robot
-        2. Start ROV2 simulation with positions and preferred velocities
-        3. call simulation.step() once each robot has updated its position once
         4. Update robot positions in ROV2 simulation based on actual position
         5. Update actual robot speed based on robot velocity in ROV2 simulation
         6. repeat steps 3-5 until all robots reached their target
         """
-
-        self.get_logger().debug("===========================")
-        self.get_logger().debug("Received odom message for {}".format(robot_name))
-
-        # if positions are not yet assigned and all robot positions were received
-        if not self.targets_set and self.all_positions_assigned():
-            # assign targets to robots
-            self.assign_targets()
-
-            # start the RVO2 simulation
-            self.init_simulation()
-            self.targets_set = True
-
-            # log pattern start time
-            self.log_timing()
-
-        # get the robot
         robot = self.robots[robot_name]
 
-        # get the publisher corresponding to robot
-        twist_publisher = self.twist_publishers[robot_name]
-
-        # read robot positions
+        # get x and y pos
         robot.position = Point(
             odom_msg.pose.pose.position.x,
             odom_msg.pose.pose.position.y
         )
 
-        # read robot velocity
+        # get rotation
+        robot.w = robot.get_orientation(odom_msg)
+
+        # get x and y velocity
         robot.velocity = (
             odom_msg.twist.twist.linear.x,
             odom_msg.twist.twist.linear.y
         )
 
-        # signify that the robot had its state updated
-        robot.updated = True
-
         # Save initial position
         if robot.initial_position is None:
             robot.initial_position = robot.position
 
-        # Initialize twist message
-        twist_msg = Twist()
 
-        # if the robots target is set and its not reached its target
-        if robot.target is not None and not robot.reached_target() and self.all_positions_assigned():
+    def run(self):
+        # define rate at which to send messages
+        update_rate = 5 # /s
 
-            # RVO2 Simulation step
-            self.update_step()
+        # start rate
+        self.rate = self.create_rate(update_rate)
 
-            # rotate it towards its target
-            twist_msg = robot.rotate_to_target(odom_msg, twist_msg)
+        while rclpy.ok():
+            if self.all_positions_assigned():
+                t1 = time.time()
 
-            # if it aim towards its target start moving
-            if self.robots_correctly_oriented():
-                robot.start_moving()
+                if not self.targets_assigned():
+                    self.assign_targets()
+                else:
+                    if self.sim is None:
+                        # Init RVO simulation
+                        self.init_simulation(update_rate)
 
-            # if the robot is supposed to run and has not reached its target
-            if robot.run == True:
-                twist_msg = robot.set_linear_speed(twist_msg)
+                    # synch robot states and do simulation step
+                    self.update_step()
 
-        # publish twist message
-        twist_publisher.publish(twist_msg)
+                    # send controll signals as in simulation
+                    self.send_controll_signals(1/update_rate)
 
-        # if pattern is achieved, start next pattern
-        if self.targets_assigned():
-            if self.pattern_achieved():
-                self.get_logger().info("Next pattern")
+                if self.pattern_achieved():
+                    self.reset_robots()
 
-                # unset previous targets
-                self.reset_robots()
+                # warn if timing constraint violated
+                t2 = time.time()
+                td = t2 - t1
+                if td > 1/update_rate:
+                    self.get_logger().warning("td > update_rate: {:.2f} > 1/{}".format(td, update_rate))
+
+            self.rate.sleep()
 
 def main():
     rclpy.init()
@@ -480,10 +503,15 @@ def main():
         raise ValueError("No target patterns in environment")
 
     # Initialize target assignement controller
-    tac = ArtisticPatternController(robots, goal_positions)
+    controller = ArtisticPatternController(robots, goal_positions)
 
-    rclpy.spin(tac)
+    # Spin in a separate thread
+    thread = threading.Thread(target=rclpy.spin, args=(controller, ), daemon=True)
+    thread.start()
+
+    controller.run()
     rclpy.shutdown()
+
 
 if __name__ == "__main__":
     main()

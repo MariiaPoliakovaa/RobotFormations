@@ -1,9 +1,13 @@
+import math
 import numpy as np
+from typing import Tuple
+from rclpy.logging import get_logger
 
 from turtlebot_controller.turtlebot_controller import Turtlebot, Point
 
-class ArtisticTurtleBot(Turtlebot):
+logger = get_logger('turtlebot_logger')
 
+class ArtisticTurtleBot(Turtlebot):
     def preferred_velocity(self, goal):
         """
         Computes the preferred speed for the provided robot
@@ -30,19 +34,24 @@ class ArtisticTurtleBot(Turtlebot):
         # choose Vp to be somewhat slower than the max speed
         Vp = 0.8 * self.max_linear_speed
 
+        """
         if initial_position.distance_to(goal) < initial_dist_threhold:
             factor = 1 - (initial_dist_threhold - initial_position.distance_to(goal)) / initial_dist_threhold
-        #    print(factor)
 
             # reduce Vp the closer the initial position is to the goal
             Vp *= factor
+        """
 
         # Make vectors for position and goal
         position_v = np.array([position.x, position.y])
         goal_v = np.array([goal.x, goal.y])
 
+        #logger.info("Position: "+ str(position_v))
+        #logger.info("Goal: "+ str(goal_v))
+
         # calculate K
-        K = initial_position.distance_to(goal)
+        #K = initial_position.distance_to(goal)
+        K = 0.5
 
         # calculate preferred speed
         preferred_speed = Vp * np.min(np.array([
@@ -50,13 +59,64 @@ class ArtisticTurtleBot(Turtlebot):
             (position.distance_to(goal) / K)
         ]))
 
-        # reduce speed if starting position is close to it's target
-        # clip minimum speed to 0.1 (Not originally part of the algorithm)
-        preferred_speed = preferred_speed if preferred_speed > 0.05 else 0.05
-
         # calculate preferred velocity
         preferred_velocity = preferred_speed * (goal_v - position_v) / position.distance_to(goal)
         preferred_velocity = (preferred_velocity[0], preferred_velocity[1])
 
-        return preferred_speed, preferred_velocity
+        #preferred_velocity = self.reduce_rotation(preferred_velocity)
 
+        return preferred_velocity
+
+
+    def reduce_rotation(self, velocity: Tuple[float, float]) -> Tuple[float, float]:
+        """
+        Reduces the rotation of the preferred_velocity the closer 
+        the rotation of the robot is to the target rotation.
+        This should prevent overshooting the rotation and lead
+        to less oscilation in the path
+
+        :param velocity : The preferred velocity
+
+        :returns        : The preferred velocity with the rotation reduced
+        """
+        # get rotation and speed from velocity vector
+        preferred_rotation = np.arctan2(velocity[1], velocity[0])
+        preferred_speed = np.linalg.norm(np.array(velocity))
+        logger.info("Preferred rotation: {:.2f}".format(preferred_rotation))
+
+        preferred_rotation *= 0.2
+
+        # reconstruct updated velocity vector
+        vel_x = preferred_speed * np.cos(preferred_rotation)
+        vel_y = preferred_speed * np.sin(preferred_rotation)
+
+        #return (vel_x, vel_y)
+        return velocity
+
+
+    def rotate_to_target(self, twist_msg):
+        """
+        Adds a twist element to <twist_msg>
+        to aim the turtlebot towards its target.
+        """
+
+        # get angle to target
+        angle_to_target = math.atan2(
+            self.target.y - self.position.y,
+            self.target.x - self.position.x
+        ) % (2*np.pi)
+
+        # calculate how far to move
+        angle_difference = angle_to_target - self.w
+        #logger.info("Robot rotation: {:.2f}".format(self.w-np.pi))
+
+        if abs(angle_difference) > self.angle_threshold:
+            # reduce angular speed based on angle difference
+            angular_speed = self.angular_speed * angle_difference/np.pi
+            twist_msg.angular.z = angular_speed
+            correctly_oriented = False
+        else:
+            correctly_oriented = True
+
+        self.correctly_oriented = correctly_oriented
+        return twist_msg
