@@ -87,10 +87,10 @@ def cell_polygons(points, shape):
     
             contained = False
             for vertice in vertices:
-                if polygon.contains(Point(vertice[0], vertice[1])):
+                if shape.contains(Point(vertice[0], vertice[1])):
                     contained = True
             if contained:
-                cells.append(polygon.intersection(Polygon(vertices)))
+                cells.append(shape.intersection(Polygon(vertices)))
     return cells
 
 

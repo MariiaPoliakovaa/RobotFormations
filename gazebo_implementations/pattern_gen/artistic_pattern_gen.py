@@ -163,6 +163,7 @@ def goal_generation(polygon, n):
 
             old_centroids = points
             i += 1
+
     return points
 
 

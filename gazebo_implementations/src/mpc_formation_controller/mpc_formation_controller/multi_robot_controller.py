@@ -47,13 +47,13 @@ class MultiRobotController(Node):
         :param T             : Forcast horizon
         """
         super().__init__("multi_robot_mpc_controller")
+        self.turtlebot_radius = 0.07
         self.max_angular_speed = 0.1
         self.max_linear_speed = 0.12
         self.max_delta_velocity = 1.5
         self.max_delta_omega = np.pi/2
-        self.min_dist = 0.0
-        self.last_sim_time_values = deque(maxlen=5)
-        self.last_real_time_values = deque(maxlen=5)
+        self.min_dist = 0.2
+        self.sim_time = 0
         self.gazebo_real_time_factor = 1
         self.T = T
         self.dt = None
@@ -161,18 +161,7 @@ class MultiRobotController(Node):
         Computes the real time factor of
         the gazebo simulation
         """
-        gazebo_time_ns = time_msg.clock.sec * 1e9 + time_msg.clock.nanosec
-        real_time_ns = time.time_ns()
-
-        self.last_sim_time_values.append(gazebo_time_ns)
-        self.last_real_time_values.append(real_time_ns)
-
-        if len(self.last_sim_time_values) >= 5:
-            self.gazebo_real_time_factor = (
-                (self.last_sim_time_values[0] - self.last_sim_time_values[4])/
-                (self.last_real_time_values[0] - self.last_real_time_values[4])
-            )
-        #self.get_logger().info("Rt factor: {:.2f}".format(self.gazebo_real_time_factor))
+        self.sim_time = time_msg.clock.sec * 1e9 + time_msg.clock.nanosec
 
     def assign_targets(self):
         """
@@ -324,13 +313,16 @@ class MultiRobotController(Node):
 
     def run(self):
         # define rate at which to send messages
-        update_rate = 2 # /s
+        update_rate = 3 # /s
+        real_time_factor = 0.3
+
+        sim_update_rate = update_rate * 1/real_time_factor
 
         # Init mpc_solver
-        self.init_mpc_solver(1/update_rate)
+        self.init_mpc_solver(1/sim_update_rate)
 
         # start rate
-        self.rate = self.create_rate(update_rate)
+        self.rate = self.create_rate(sim_update_rate)
 
         while rclpy.ok():
             if self.all_positions_assigned():
@@ -346,10 +338,10 @@ class MultiRobotController(Node):
 
                 # warn if timing constraint violated
                 t2 = time.time()
-                td = t2 - t1
+                td = (t2 - t1) * 1/update_rate
                 self.get_logger().info("td: {:.2f}".format(td))
-                if td > 1/update_rate:
-                    self.get_logger().warning("td > update_rate: {:.2f} > 1/{}".format(td, update_rate))
+                if td > real_time_factor/update_rate:
+                    self.get_logger().warning("td > update_rate: {:.2f} > {:.2f}".format(td, real_time_factor/sim_update_rate))
 
             self.rate.sleep()
 
@@ -369,7 +361,7 @@ def main():
         raise ValueError("No target patterns in environment")
 
     # Initialize target assignement controller
-    T = 20
+    T = 10
     controller = MultiRobotController(robots, goal_positions, T)
 
     # Spin in a separate thread

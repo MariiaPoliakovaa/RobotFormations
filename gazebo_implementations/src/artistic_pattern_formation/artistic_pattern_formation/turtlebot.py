@@ -51,7 +51,7 @@ class ArtisticTurtleBot(Turtlebot):
 
         # calculate K
         #K = initial_position.distance_to(goal)
-        K = 0.5
+        K = 0.8
 
         # calculate preferred speed
         preferred_speed = Vp * np.min(np.array([
