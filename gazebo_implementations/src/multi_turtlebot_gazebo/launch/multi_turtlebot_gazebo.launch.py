@@ -89,7 +89,7 @@ def generate_launch_description():
             namespace=namespace,
             executable="robot_state_publisher",
             output="screen",
-            parameters=[{"use_sim_time": False,
+            parameters=[{"use_sim_time": True,
                          "publish_frequency": 10.0}],
             remappings=remappings,
             arguments=[urdf],
