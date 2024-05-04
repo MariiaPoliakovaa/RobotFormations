@@ -456,7 +456,7 @@ class ArtisticPatternController(Node):
     def run(self):
         # define rate at which to send messages
         update_rate = 5 # /s
-        real_time_factor = 0.5
+        real_time_factor = 0.3
         sim_update_rate = update_rate * real_time_factor
 
         # start rate
