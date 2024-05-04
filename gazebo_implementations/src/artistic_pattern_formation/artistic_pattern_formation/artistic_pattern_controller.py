@@ -67,6 +67,7 @@ class ArtisticPatternController(Node):
         self.seconds = 0
         self.last_seconds = 0
         self.sim = None
+        self.turtlebot_radius = 0.07
 
         # set up timing logfile
         current_timestamp = datetime.now().strftime("%Y_%m_%d:%H_%M_%S")
@@ -121,14 +122,14 @@ class ArtisticPatternController(Node):
         self.get_logger().info("Initializing simulation")
 
         # Define variables for simulation
-        max_neighbor_dist = 0.5
+        max_neighbor_dist = 2 * self.turtlebot_radius
         # NOTE: We can probably equal max_neighbors to the number of robots, 
         # the RVO2 simulation should not be the bottleneck
         time_step = 1/update_rate
         max_neighbors = len(self.robot_names) - 1 # must be higher with many close robots, but takes longer
         time_horizon = 3
         time_horizon_obst = 2 # doesnt matter, we have no obstacles
-        agent_radius = 0.5 # TODO: get turtlebot radius
+        agent_radius = self.turtlebot_radius
         max_speed = self.max_linear_speed
 
         self.sim = rvo2.PyRVOSimulator(
@@ -455,9 +456,11 @@ class ArtisticPatternController(Node):
     def run(self):
         # define rate at which to send messages
         update_rate = 5 # /s
+        real_time_factor = 0.5
+        sim_update_rate = update_rate * real_time_factor
 
         # start rate
-        self.rate = self.create_rate(update_rate)
+        self.rate = self.create_rate(sim_update_rate)
 
         while rclpy.ok():
             if self.all_positions_assigned():
