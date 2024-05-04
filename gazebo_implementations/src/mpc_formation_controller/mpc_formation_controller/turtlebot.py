@@ -10,6 +10,7 @@ class MPCTurtleBot:
         self.max_angular_speed = max_angular_speed
         self.max_linear_speed = max_linear_speed
         self.target_radius = 0.2
+        self.target = None
 
         self.state = None
 

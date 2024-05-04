@@ -1,4 +1,5 @@
 import rclpy
+import signal
 import threading
 import csv
 import ipdb
@@ -32,7 +33,7 @@ from tf_transformations import euler_from_quaternion
 from typing import List, Dict
 
 from .turtlebot import MPCTurtleBot as Turtlebot
-from .optimization import Solver
+from .multi_robot_optimization import Solver
 
 
 class MultiRobotController(Node):
@@ -46,11 +47,11 @@ class MultiRobotController(Node):
         :param T             : Forcast horizon
         """
         super().__init__("multi_robot_mpc_controller")
-        self.update_rate = 5
-        self.max_angular_speed = 0.5
+        self.max_angular_speed = 0.1
         self.max_linear_speed = 0.12
         self.max_delta_velocity = 1.5
         self.max_delta_omega = np.pi/2
+        self.min_dist = 0.0
         self.last_sim_time_values = deque(maxlen=5)
         self.last_real_time_values = deque(maxlen=5)
         self.gazebo_real_time_factor = 1
@@ -75,20 +76,25 @@ class MultiRobotController(Node):
                             self.max_linear_speed
             ) for name in robot_names}
 
-        # init MPC solver
-        self.solver = Solver(
-            self.max_linear_speed,
-            self.max_angular_speed,
-            self.max_delta_velocity,
-            self.max_delta_omega,
-            1/self.update_rate,
-            self.T
-        )
-
         # init subscriptions
         self.odom_subscriptions = self.init_odom_subscriptions(robot_names)
         self.time_subscription = self.init_time_subscription()
         self.twist_publishers = self.init_twist_publishers(robot_names)
+
+
+    def init_mpc_solver(self, dt: float):
+        self.solver = Solver(
+            len(self.robots),
+            self.min_dist,
+            self.max_linear_speed,
+            self.max_angular_speed,
+            self.max_delta_velocity,
+            self.max_delta_omega,
+            dt,
+            self.T,
+            self.get_logger()
+        )
+
 
     def init_twist_publishers(self, robot_names: List[str]) -> Dict[str, Publisher]:
         """
@@ -163,9 +169,10 @@ class MultiRobotController(Node):
 
         if len(self.last_sim_time_values) >= 5:
             self.gazebo_real_time_factor = (
-                (self.last_sim_time_values[4] - self.last_sim_time_values[0])/
-                (self.last_real_time_values[4] - self.last_real_time_values[0])
+                (self.last_sim_time_values[0] - self.last_sim_time_values[4])/
+                (self.last_real_time_values[0] - self.last_real_time_values[4])
             )
+        #self.get_logger().info("Rt factor: {:.2f}".format(self.gazebo_real_time_factor))
 
     def assign_targets(self):
         """
@@ -174,9 +181,9 @@ class MultiRobotController(Node):
 
         :param pattern : The pattern used to generate target positions
         """
-        t1 = time.time()
         # use next pattern
         pattern_name = next(self.pattern_names)
+        self.get_logger().info("New pattern: {}".format(pattern_name))
         self.pattern_name = pattern_name
         goal_positions = self.goal_positions[pattern_name]
 
@@ -187,8 +194,8 @@ class MultiRobotController(Node):
         for i, (robot_name, robot) in enumerate(self.robots.items()):
             robot_names.append(robot_name)
             for j, goal_position in enumerate(goal_positions):
-                dist = np.sqrt( (robot.position.x - goal_position[0])**2 +
-                               (robot.position.y - goal_position[1])**2 )
+                dist = np.sqrt( (robot.state[0] - goal_position[0])**2 +
+                               (robot.state[1] - goal_position[1])**2 )
                 distances[i][j] = dist**2
 
         # do target assignement
@@ -197,19 +204,13 @@ class MultiRobotController(Node):
         for robot_idx, goal_idx in zip(assigned_positions[0], assigned_positions[1]):
             robot_name = robot_names[robot_idx]
             robot = self.robots[robot_name]
-            position = robot.position
             goal_position = goal_positions[goal_idx]
-            self.robot_goals[robot_name] = Point(
-                goal_position[0],
-                goal_position[1]
-            )
-            robot.set_target(
-                self.robot_goals[robot_name]
-            )
 
-        # calculate the elapsed time
-        t2 = time.time()
-        self.get_logger().info("Target assignement took {:.2f}s".format(t2-t1))
+            robot.set_target(
+                goal_position[0],
+                goal_position[1],
+                0 # TODO: implement other angles
+            )
 
     def all_positions_assigned(self):
         """
@@ -218,7 +219,7 @@ class MultiRobotController(Node):
         """
         positions_set = True
         for robot in self.robots.values():
-            if robot.position is None or robot.initial_position is None:
+            if robot.state is None:
                 positions_set = False
         return positions_set
 
@@ -227,6 +228,9 @@ class MultiRobotController(Node):
         Returns True if all robots have their target assigned,
         else False
         """
+        if not self.all_positions_assigned():
+            return
+
         assigned = True
         for robot in self.robots.values():
             if robot.target is None:
@@ -240,7 +244,6 @@ class MultiRobotController(Node):
         """
         done = True
         for robot_name, robot in self.robots.items():
-            robot_goal = self.robot_goals[robot_name]
             if not robot.reached_target():
                 done = False
         return done
@@ -251,8 +254,6 @@ class MultiRobotController(Node):
         """
         for robot in self.robots.values():
             robot.target = None
-            robot.stop_moving()
-            robot.initial_position = None
         self.targets_set = False
 
     def odom_callback(self, odom_msg: Odometry, robot_name: str):
@@ -281,49 +282,75 @@ class MultiRobotController(Node):
 
         robot.set_state(x, y, w)
 
-    def send_optimal_controll(self, robot):
+    def send_optimal_controll(self):
         """
-        Computes the most optimal controll signal
-        by solvin the for the minimum of the
-        cost function in:
-        "https://braca51e.medium.com/navigation-
-        using-model-predictive-control-with-turtlebot3-7d7c55ab22a6"
+        Computes and sends the most optimal controll inputs
+        for all robots
         """
-        current_state = robot.state
-        target_state = robot.target
+        robots = list(self.robots.values())
+        current_states = [robot.state for robot in robots]
+        target_states = [robot.target for robot in robots]
 
-        if current_state is None or self.solver is None:
+        #self.get_logger().info("\n" + str(current_states) + "\n" + str(target_states))
+
+        if None in current_states or self.solver is None:
             # only execute after the robot state has been set
+            # and the solver initialized
             return
 
         # compute optimal u
         optimal_u = self.solver.solve(
-            current_state,
-            target_state
+            current_states,
+            target_states
         )
 
-        # cast optimal u to numpy
-        u = np.array(optimal_u).flatten()
+        # send optimal u to each robot
+        for i, u in enumerate(optimal_u):
+            # cast optimal u to numpy
+            u = np.array(u).flatten()
 
-        twist_msg = Twist()
+            twist_msg = Twist()
 
-        # set linear speed
-        twist_msg.linear.x = u[0]
+            # set linear speed
+            twist_msg.linear.x = u[0]
 
-        # set angular speed
-        twist_msg.angular.z = u[1]
+            # set angular speed
+            twist_msg.angular.z = u[1]
 
-        # send optimal controll to robot
-        publisher = self.twist_publishers[robot.name]
-        publisher.publish(twist_msg)
+            # send optimal controll to robot
+            robot = robots[i]
+            publisher = self.twist_publishers[robot.name]
+            publisher.publish(twist_msg)
 
     def run(self):
-        self.rate = self.create_rate(self.update_rate)
+        # define rate at which to send messages
+        update_rate = 2 # /s
+
+        # Init mpc_solver
+        self.init_mpc_solver(1/update_rate)
+
+        # start rate
+        self.rate = self.create_rate(update_rate)
 
         while rclpy.ok():
-            for robot in self.robots.values():
-                if self.robot.state is not None:
-                    self.send_optimal_controll(robot)
+            if self.all_positions_assigned():
+                t1 = time.time()
+
+                if not self.targets_assigned():
+                    self.assign_targets()
+                else:
+                    self.send_optimal_controll()
+
+                if self.pattern_achieved():
+                    self.reset_robots()
+
+                # warn if timing constraint violated
+                t2 = time.time()
+                td = t2 - t1
+                self.get_logger().info("td: {:.2f}".format(td))
+                if td > 1/update_rate:
+                    self.get_logger().warning("td > update_rate: {:.2f} > 1/{}".format(td, update_rate))
+
             self.rate.sleep()
 
 def main():
@@ -342,7 +369,7 @@ def main():
         raise ValueError("No target patterns in environment")
 
     # Initialize target assignement controller
-    T = 50
+    T = 20
     controller = MultiRobotController(robots, goal_positions, T)
 
     # Spin in a separate thread
@@ -350,7 +377,6 @@ def main():
     thread.start()
 
     controller.run()
-    #rclpy.spin(controller)
     rclpy.shutdown()
 
 if __name__ == "__main__":

@@ -26,3 +26,4 @@ patterns_file="${num_robots}robots_patterns.json"
 patterns_path="pattern_gen/patterns/${patterns_file}"
 target_pos=$(<"$patterns_path")
 export TARGET_POSITIONS="$target_pos"
+export ROS_DOMAIN_ID=1

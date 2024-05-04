@@ -31,7 +31,7 @@ class TargetAssignementTurtlebot(Turtlebot):
         """
         self.paused = False
 
-    def in_deadzone(self, other):
+    def in_deadzone(self, other) -> bool:
         """
         Returns True if another turtlebot is within
         the deadzone radius, else False
