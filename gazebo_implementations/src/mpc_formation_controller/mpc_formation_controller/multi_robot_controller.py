@@ -52,7 +52,7 @@ class MultiRobotController(Node):
         self.max_linear_speed = 0.12
         self.max_delta_velocity = 1.5
         self.max_delta_omega = np.pi/2
-        self.min_dist = 0.2
+        self.min_dist = 0.1
         self.sim_time = 0
         self.gazebo_real_time_factor = 1
         self.T = T
@@ -314,12 +314,12 @@ class MultiRobotController(Node):
     def run(self):
         # define rate at which to send messages
         update_rate = 3 # /s
-        real_time_factor = 0.3
+        real_time_factor = 0.2
 
-        sim_update_rate = update_rate * 1/real_time_factor
+        sim_update_rate = update_rate * real_time_factor
 
         # Init mpc_solver
-        self.init_mpc_solver(1/sim_update_rate)
+        self.init_mpc_solver(1/update_rate)
 
         # start rate
         self.rate = self.create_rate(sim_update_rate)
@@ -338,10 +338,15 @@ class MultiRobotController(Node):
 
                 # warn if timing constraint violated
                 t2 = time.time()
-                td = (t2 - t1) * 1/update_rate
+                td = t2 - t1
                 self.get_logger().info("td: {:.2f}".format(td))
-                if td > real_time_factor/update_rate:
-                    self.get_logger().warning("td > update_rate: {:.2f} > {:.2f}".format(td, real_time_factor/sim_update_rate))
+                if td > 1/sim_update_rate:
+                    self.get_logger().warning(
+                        "td > update_rate: {:.2f} > {:.2f}".format(
+                            td,
+                            1/sim_update_rate
+                        )
+                    )
 
             self.rate.sleep()
 
@@ -361,7 +366,7 @@ def main():
         raise ValueError("No target patterns in environment")
 
     # Initialize target assignement controller
-    T = 10
+    T = 20
     controller = MultiRobotController(robots, goal_positions, T)
 
     # Spin in a separate thread
