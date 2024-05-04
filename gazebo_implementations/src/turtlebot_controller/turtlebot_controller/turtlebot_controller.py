@@ -4,7 +4,9 @@ import ipdb
 import transforms3d as tf3d
 from tf_transformations import euler_from_quaternion
 from typing import List
+from rclpy.logging import get_logger
 
+logger = get_logger('turtlebot_logger')
 
 class Point:
     def __init__(self, x, y):
@@ -79,16 +81,14 @@ class Turtlebot:
         # get current orientation
         current_orientation = self.get_orientation(odom_msg)
 
-        # calculate how far to move
+        # calculate how far to rotate
         angle_difference = angle_to_target - current_orientation
 
-        if abs(angle_difference) > self.angle_threshold:
-            angular_speed = self.angular_speed if angle_difference > 0 else -self.angular_speed
+        # calculate how fast to rotate
+        angular_speed = self.angular_speed * angle_difference/np.pi
+        twist_msg.angular.z = angular_speed
 
-            # NOTE: rotate slower when close to target rotation
-            factor = (2*np.pi - angle_difference) / (2*np.pi)
-            angular_speed *= factor**2
-            twist_msg.angular.z = angular_speed
+        if abs(angle_difference) > self.angle_threshold:
             correctly_oriented = False
         else:
             correctly_oriented = True

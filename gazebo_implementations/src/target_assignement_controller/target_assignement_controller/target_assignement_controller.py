@@ -22,6 +22,7 @@ from itertools import cycle
 from typing import List, Dict
 
 from turtlebot_controller.turtlebot_controller import Point
+from base_controller.base_controller import BaseController
 from .turtlebot import TargetAssignementTurtlebot as Turtlebot
 from .target_assignement import target_assignement_strategy
 
@@ -43,12 +44,13 @@ def append_to_csv(filename, data):
         writer.writerow(data)
 
 
-class TargetAssignementController(Node):
+class TargetAssignementController(BaseController):
     def __init__(self, robot_names: List[str], goal_positions: Dict[str, list]):
-        super().__init__("target_assignement_controller")
-        max_angular_speed = 0.5
-        max_linear_speed = 0.5
-        deadzone_radius = 0.5 # I need to work out a useful value for this
+        super().__init__("target_assignement_controller", robot_names)
+        max_angular_speed = 2.84
+        max_linear_speed = 0.22
+        turtlebot_radius = 0.07
+        deadzone_radius = (2 * turtlebot_radius) * 1.4
 
         self.targets_set = False
         self.seconds = 0
