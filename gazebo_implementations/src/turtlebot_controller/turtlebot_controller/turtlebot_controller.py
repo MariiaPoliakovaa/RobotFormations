@@ -66,7 +66,7 @@ class Turtlebot:
     def stop_moving(self):
         self.run = False
 
-    def rotate_to_target(self, odom_msg, twist_msg):
+    def rotate_to_target(self, twist_msg):
         """
         Adds a twist element to <twist_msg>
         to aim the turtlebot towards its target.
@@ -78,24 +78,20 @@ class Turtlebot:
             self.target.x - self.position.x
         ) % (2*np.pi)
 
-        # get current orientation
-        current_orientation = self.get_orientation(odom_msg)
-
-        # calculate how far to rotate
-        angle_difference = angle_to_target - current_orientation
-
-        # calculate how fast to rotate
-        angular_speed = self.angular_speed * angle_difference/np.pi
-        twist_msg.angular.z = angular_speed
+        # calculate how far to move
+        angle_difference = angle_to_target - self.w
+        #logger.info("Robot rotation: {:.2f}".format(self.w-np.pi))
 
         if abs(angle_difference) > self.angle_threshold:
+            # reduce angular speed based on angle difference
+            angular_speed = self.angular_speed * angle_difference/np.pi
+            twist_msg.angular.z = angular_speed
             correctly_oriented = False
         else:
             correctly_oriented = True
 
         self.correctly_oriented = correctly_oriented
         return twist_msg
-
 
     def set_linear_speed(self, twist_msg):
         """

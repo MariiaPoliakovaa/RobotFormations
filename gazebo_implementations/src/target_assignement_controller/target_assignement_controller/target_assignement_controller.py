@@ -1,4 +1,7 @@
 import rclpy
+import ipdb
+import threading
+import signal
 import json
 import os
 import csv
@@ -31,7 +34,7 @@ class TargetAssignementController(BaseController):
     def __init__(self, robot_names: List[str], goal_positions: Dict[str, list]):
         super().__init__("target_assignement_controller", robot_names,
                          goal_positions)
-        self.deadzone_radius = (2 * self.turtlebot_radius) * 1.4
+        self.deadzone_radius = 5 * self.turtlebot_radius
 
         # init turtlebot objects
         self.robot_names = robot_names
@@ -50,9 +53,8 @@ class TargetAssignementController(BaseController):
         turtlebots = list(self.robots.values())
 
         # get the current pattern
-        pattern_name = next(self.pattern_names)
-        self.pattern_name = pattern_name
-        goal_positions = self.goal_positions[pattern_name]
+        self.pattern_name = next(self.pattern_names)
+        goal_positions = self.goal_positions[self.pattern_name]
 
         # assign targets to the turtlebots
         prio_direction = 'increasing'
@@ -66,7 +68,7 @@ class TargetAssignementController(BaseController):
         turtlebots_assigned = {robot.name: robot for
                               robot in turtlebots_assigned}
 
-        return turtlebots_assigned
+        self.robots = turtlebots_assigned
 
     def check_deadzones(self, robot: Turtlebot):
         """
@@ -86,64 +88,68 @@ class TargetAssignementController(BaseController):
                 else:
                     other_robot.pause()
 
-    def odom_callback(self, odom_msg: Odometry, robot_name: str):
+    def send_controll_signals(self):
         """
-        Odometry callback to receive pose from the turtlebot and
-        send a twist message based on the turtlebots state
+        Sends cmd_vel messages to the Robots
         """
-        # if positions are not yet assigned and all robot positions were
-        # received
-        if not self.targets_assigned() and self.all_positions_assigned():
-            self.robots = self.assign_targets_prios()
-            self.targets_set = True
+        for robot in self.robots.values():
+            twist_publisher = self.twist_publishers[robot.name]
+            twist_msg = Twist()
 
-        # get the robot
-        robot = self.robots[robot_name]
+            # if the robots target is set and its not reached its target
+            if robot.target is not None and not robot.reached_target():
 
-        # get the publisher corresponding to robot
-        twist_publisher = self.twist_publishers[robot_name]
+                # rotate it towards its target
+                twist_msg = robot.rotate_to_target(twist_msg)
 
-        # read robot positions
-        robot.position = Point(
-            odom_msg.pose.pose.position.x,
-            odom_msg.pose.pose.position.y
-        )
+                # if it aim towards its target start moving
+                if self.robots_correctly_oriented():
+                    robot.start_moving()
 
-        # Save initial position
-        if robot.initial_position is None:
-            robot.initial_position = robot.position
+                # check if there is another robot in this robots deadzone
+                # if there is, stop the one with the lower priority
+                if self.all_positions_assigned():
+                    self.check_deadzones(robot)
 
-        twist_msg = Twist()
+                # if the robot is supposed to run and has not reached its target
+                if robot.run == True:
+                    twist_msg = robot.set_linear_speed(twist_msg)
 
-        # if the robots target is set and its not reached its target
-        if robot.target is not None and not robot.reached_target():
+            # publish twist message
+            twist_publisher.publish(twist_msg)
 
-            # rotate it towards its target
-            twist_msg = robot.rotate_to_target(odom_msg, twist_msg)
 
-            # if it aim towards its target start moving
-            if self.robots_correctly_oriented():
-                robot.start_moving()
+    def run(self):
+        # define rate at which to send messages
+        update_rate = 5 # /s
+        real_time_factor = 0.3
+        sim_update_rate = update_rate * real_time_factor
 
-            # check if there is another robot in this robots deadzone
-            # if there is, stop the one with the lower priority
+        # start rate
+        self.rate = self.create_rate(sim_update_rate)
+
+        while rclpy.ok():
             if self.all_positions_assigned():
-                self.check_deadzones(robot)
+                t1 = time.time()
+                self.log_positions()
 
-            # if the robot is supposed to run and has not reached its target
-            if robot.run == True:
-                twist_msg = robot.set_linear_speed(twist_msg)
+                if not self.targets_assigned():
+                    self.assign_targets_prios()
+                else:
+                    # send controll signals as in simulation
+                    self.send_controll_signals()
 
-        # publish twist message
-        twist_publisher.publish(twist_msg)
+                if self.pattern_achieved():
+                    self.reset_robots()
 
-        # if pattern is achieved, start next pattern
-        if self.targets_assigned():
-            if self.pattern_achieved():
-                self.get_logger().info("Next pattern")
+                # warn if timing constraint violated
+                t2 = time.time()
+                td = t2 - t1
+                if td > 1/update_rate:
+                    self.get_logger().warning("td > update_rate: {:.2f} > 1/{}".format(td, update_rate))
 
-                # unset previous targets
-                self.reset_robots()
+            self.rate.sleep()
+
 
 def main():
     rclpy.init()
@@ -161,9 +167,16 @@ def main():
         raise ValueError("No target patterns in environment")
 
     # Initialize target assignement controller
-    tac = TargetAssignementController(robots, goal_positions)
+    controller = TargetAssignementController(robots, goal_positions)
 
-    rclpy.spin(tac)
+    # set signal handler for shutdown
+    signal.signal(signal.SIGINT, controller.shutdown_handler)
+
+    # Spin in a separate thread
+    thread = threading.Thread(target=rclpy.spin, args=(controller, ), daemon=True)
+    thread.start()
+
+    controller.run()
     rclpy.shutdown()
 
 if __name__ == "__main__":

@@ -28,6 +28,8 @@ from nav_msgs.msg import Odometry
 from rosgraph_msgs.msg import Clock
 from geometry_msgs.msg import Twist
 
+from turtlebot_controller.turtlebot_controller import Point
+
 BASE_DIR = Path(__file__).resolve().parents[6]
 
 class BaseController(Node):
@@ -120,6 +122,27 @@ class BaseController(Node):
                     robot.w
                 ]
             )
+
+    def odom_callback(self, odom_msg: Odometry, robot_name: str):
+        """
+        Saves the turtlebot position, rotation and velocity
+        """
+        robot = self.robots[robot_name]
+
+        # get x and y pos
+        robot.position = Point(
+            odom_msg.pose.pose.position.x,
+            odom_msg.pose.pose.position.y
+        )
+
+        # get rotation
+        robot.w = robot.get_orientation(odom_msg)
+
+        # get x and y velocity
+        robot.velocity = (
+            odom_msg.twist.twist.linear.x,
+            odom_msg.twist.twist.linear.y
+        )
 
     def all_positions_assigned(self):
         """

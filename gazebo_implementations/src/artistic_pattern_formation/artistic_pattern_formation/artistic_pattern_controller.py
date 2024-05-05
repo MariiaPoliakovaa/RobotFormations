@@ -234,38 +234,6 @@ class ArtisticPatternController(BaseController):
             twist_publisher.publish(twist_msg)
 
 
-    def odom_callback(self, odom_msg: Odometry, robot_name: str):
-        """
-        Odometry callback to receive pose from the turtlebot and
-        send a twist message based on the turtlebots state
-
-        The collision avoidance algorithm is implemented in RVO2:
-            https://gamma.cs.unc.edu/RVO2/documentation/2.0/index.html.
-        I use the following repository:
-            https://github.com/sybrenstuvel/Python-RVO2.git
-        It provides python bindings for the RVO2 library.
-        4. Update robot positions in ROV2 simulation based on actual position
-        5. Update actual robot speed based on robot velocity in ROV2 simulation
-        6. repeat steps 3-5 until all robots reached their target
-        """
-        robot = self.robots[robot_name]
-
-        # get x and y pos
-        robot.position = Point(
-            odom_msg.pose.pose.position.x,
-            odom_msg.pose.pose.position.y
-        )
-
-        # get rotation
-        robot.w = robot.get_orientation(odom_msg)
-
-        # get x and y velocity
-        robot.velocity = (
-            odom_msg.twist.twist.linear.x,
-            odom_msg.twist.twist.linear.y
-        )
-
-
     def run(self):
         # define rate at which to send messages
         update_rate = 5 # /s
