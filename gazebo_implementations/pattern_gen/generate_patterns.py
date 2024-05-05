@@ -4,7 +4,7 @@ import ipdb
 import shapely
 import numpy as np
 from shapely.geometry import Polygon, Point
-from artistic_pattern_gen import goal_generation, create_circle, create_triangle, create_rectangle
+from artistic_pattern_gen import goal_generation, create_circle, create_triangle, create_rectangle, create_star, create_ring
 
 def numpy_array_to_list(obj):
     if isinstance(obj, np.ndarray):
@@ -33,15 +33,24 @@ def main(n:int):
     triangle_polygon = create_triangle(triangle_vertices)
 
     # Create a rectangle
-    rectangle_lower_left = (-1.5, -1.5)
-    rectangle_upper_right = (1.5, 1.5)
+    rectangle_lower_left = (-1.2, -1.2)
+    rectangle_upper_right = (1.2, 1.2)
     rectangle_polygon = create_rectangle(rectangle_lower_left, rectangle_upper_right)
+
+    # Create a star
+    star_polygon = create_star((0,0), 2, 1, 5)
+
+    # create a ring
+    ring_polygon = create_ring(circle_center, 1.8, 1)
+
 
 
     patterns = {
         'circle': circle_polygon,
         'triangle': triangle_polygon,
+        'ring': ring_polygon,
         'rectangle': rectangle_polygon
+        #'star': star_polygon
     }
 
     # create goal positions from patterns

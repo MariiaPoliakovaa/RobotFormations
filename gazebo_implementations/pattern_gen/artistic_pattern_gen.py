@@ -34,6 +34,22 @@ def create_star(center, outer_radius, inner_radius, num_points):
 
     return Polygon(points)
 
+def create_ring(center, outer_radius, inner_radius):
+    # Create the outer circle
+    outer_circle = Point(center).buffer(outer_radius)
+
+    # Create the inner circle
+    inner_circle = Point(center).buffer(inner_radius)
+
+    # Create the ring-shaped polygon (outer polygon
+    # with an inner hole)
+    ring_polygon = Polygon(
+        outer_circle.exterior.coords,
+        [inner_circle.exterior.coords]
+    )
+
+    return ring_polygon
+
 # Function to create a triangle polygon
 def create_triangle(vertices):
     return Polygon(vertices)
