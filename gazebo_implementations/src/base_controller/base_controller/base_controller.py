@@ -41,6 +41,8 @@ class BaseController(Node):
             name: [] for name in robot_names
         }
         self.positions['timestamp'] = []
+        self.positions['pattern'] = []
+        self.pattern_name = None
 
         # Simulation time
         self.simulation_time = None
@@ -73,13 +75,17 @@ class BaseController(Node):
         """
         data = self.positions
 
-        # remove timestamps from data
+        # remove timestamps and patterns from data
         timestamps = data.pop('timestamp')
+        patterns = data.pop('pattern')
 
         # construct multi level index
+        column_tuples = [(group, col_name) for group in data if group !=
+                         'timestamp' for col_name in ['x', 'y', 'w']]
+        column_tuples.append(('pattern', 'pattern'))
+
         columns = pd.MultiIndex.from_tuples(
-            [(group, col_name) for group in data if group != 'timestamp' for
-             col_name in ['x', 'y', 'w']],
+            column_tuples,
             names=['Robot', 'Coordinate']
         )
 
@@ -87,6 +93,7 @@ class BaseController(Node):
         arrays = []
         for val in data.values():
             arrays.append(np.array(val))
+        arrays.append(np.array(patterns).reshape(-1,1))
         data_transposed = np.hstack(arrays)
 
         # build dataframe
@@ -114,6 +121,7 @@ class BaseController(Node):
         positions
         """
         self.positions['timestamp'].append(self.simulation_time)
+        self.positions['pattern'].append(self.pattern_name)
         for robot in self.robots.values():
             self.positions[robot.name].append(
                 [
