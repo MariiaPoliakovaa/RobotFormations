@@ -5,6 +5,7 @@ import ipdb
 import rvo2
 import yaml
 import json
+import signal
 import time
 import os
 import logging
@@ -30,56 +31,23 @@ from geometry_msgs.msg import Twist
 from typing import List, Dict
 
 from turtlebot_controller.turtlebot_controller import Point
+from base_controller.base_controller import BaseController
 
 from .artistic_pattern_gen import create_rectangle, create_circle,create_triangle, goal_generation, euclidean_dist, create_star
 from .turtlebot import ArtisticTurtleBot as Turtlebot
 
-BASE_DIR = Path(__file__).resolve().parents[6]
 
-def append_to_csv(filename, data):
-    file_exists = os.path.exists(filename)
-
-    if not file_exists:
-        # create file
-        with open(filename, 'w') as f:
-            pass
-
-    with open(filename, 'a', newline='') as file:
-        writer = csv.writer(file)
-        if not file_exists:
-            # If the file doesn't exist, write the header
-            writer.writerow(['Pattern', 'Time'])  # Example header
-        writer.writerow(data)
-
-
-class ArtisticPatternController(Node):
+class ArtisticPatternController(BaseController):
     def __init__(self, robot_names: List[str], goal_positions: Dict[str, Polygon]):
         """
         :param robot_names : A list of robot names
         :param patterns    : A dict with the names and polygons of patterns
         """
-        super().__init__("artistic_pattern_controller")
-        self.max_angular_speed = 2.84
-        self.max_linear_speed = 0.22 # TODO: get turtlebot max speed
-        self.max_delta_velocity = 0.6
-        self.max_delta_omega = np.pi/2
+        super().__init__("artistic_pattern_controller", robot_names, goal_positions)
         self.targets_set = False
-        self.seconds = 0
-        self.last_seconds = 0
         self.sim = None
-        self.turtlebot_radius = 0.07
-
-        # set up timing logfile
-        current_timestamp = datetime.now().strftime("%Y_%m_%d:%H_%M_%S")
-        timing_file = 'artistic_pattern_gen_{}.csv'.format(current_timestamp)
-        self.timing_path = Path(BASE_DIR, 'timing', timing_file)
-
-        # make an endless cycling iterator for the patterns
-        self.pattern_names = cycle(goal_positions.keys())
-        self.goal_positions = goal_positions
 
         # init turtlebot objects
-        self.robot_names = robot_names
         self.robots = {
             name: Turtlebot(name,
                             self.max_angular_speed,
@@ -90,28 +58,6 @@ class ArtisticPatternController(Node):
 
         # init targets for robots
         self.robot_goals = {name: None for name in robot_names}
-
-        # init subscriptions and publishers
-        self.odom_subscriptions = self.init_subscriptions(robot_names)
-        self.twist_publishers = self.init_twist_publishers(robot_names)
-
-        # initialize start timer to start main loop after two seconds
-        #self.start_timer = self.create_timer(2, self.start_timer_callback)
-
-    def start_timer_callback(self):
-        """
-        This callback gets called executed by a timer shortly after
-        the node was initialized. This is needed because we need
-        to wait a moment for all robots to have published their
-        location.
-        This function starts the main loop of the Node
-        """
-        # cancel the timer to only execute once
-        self.start_timer.cancel()
-
-        # run main loop
-        self.run()
-
 
 
     def init_simulation(self, update_rate: int):
@@ -198,135 +144,6 @@ class ArtisticPatternController(Node):
                 self.robot_goals[robot_name]
             )
 
-    def all_positions_assigned(self):
-        """
-        Returns True if all turtlebots know their
-        positions, else False
-        """
-        positions_set = True
-        for robot in self.robots.values():
-            if robot.position is None or robot.initial_position is None:
-                positions_set = False
-        return positions_set
-
-    def log_timing(self):
-        """
-        Writes the current timing of the current
-        formation to csv file
-        """
-        data = [self.pattern_name, "{:.2f}".format(self.seconds)]
-        append_to_csv(self.timing_path, data)
-
-    def pattern_achieved(self) -> bool:
-        """
-        Returns True if each robot has reached its goal position,
-        otherwise False
-        """
-        done = True
-        for robot_name, robot in self.robots.items():
-            robot_goal = self.robot_goals[robot_name]
-            if not robot.reached_target():
-                done = False
-        return done
-
-    def targets_assigned(self):
-        """
-        Returns True if all robots have their target assigned,
-        else False
-        """
-        assigned = True
-        for robot in self.robots.values():
-            if robot.target is None:
-                assigned = False
-        return assigned
-
-
-    def init_twist_publishers(self, robot_names: List[str]) -> Dict[str, Publisher]:
-        """
-        Initializes the Twist message publisher for each
-        turtlebot.
-
-        :param robot_names : List of names of the turtlebots
-        :returns           : Dictionary with the robot names as keys and the
-                             publishers as values
-        """
-        publishers = {}
-        for robot_name in robot_names:
-            topic_name = f'/{robot_name}/cmd_vel'
-            publisher = self.create_publisher(
-                Twist,
-                topic_name,
-                10
-            )
-            publishers[robot_name] = publisher
-        return publishers
-
-    def init_subscriptions(self, robot_names: List[str]) -> Dict[str, Subscription]:
-        """
-        Initializes the subscriptions to the odometry message
-        for each turtlebot.
-
-        :param robot_names: List of names of the turtlebots
-        :returns           : Dictionary with the robot names as keys and the
-                             subscriptions as values
-        """
-        subscriptions = []
-
-        # subscribe to odometry messages for each robot
-        for robot_name in self.robot_names:
-            topic_name = f'/{robot_name}/odom'
-            subscription = self.create_subscription(
-                Odometry,
-                topic_name,
-                lambda msg, robot_name=robot_name: self.odom_callback(msg, robot_name),
-                10
-            )
-
-        # I need to specifically set the profile, wont work otherwise
-        clock_qos_profile = QoSProfile(
-            reliability=ReliabilityPolicy.BEST_EFFORT,
-            history=HistoryPolicy.KEEP_ALL,
-            durability=DurabilityPolicy.VOLATILE,
-        )
-
-        # subscribe to time message from gazebo
-        time_subscription = self.create_subscription(
-            Clock,
-            '/clock',
-            self.timer_callback,
-            clock_qos_profile
-        )
-        return subscriptions
-
-    def timer_callback(self, time_msg):
-        """
-        Updates the time based on /clock messages from gazebo
-        """
-        self.last_seconds = self.seconds
-        self.seconds = time_msg.clock.sec + time_msg.clock.nanosec / 1e9
-
-    def reset_robots(self):
-        """
-        Unsets the targets for all robots
-        """
-        for robot in self.robots.values():
-            robot.target = None
-            robot.stop_moving()
-            robot.correctly_oriented = False
-            robot.initial_position = None
-        self.targets_set = False
-
-    def robots_correctly_oriented(self):
-        """
-        Returns true if all robots are correctly oriented
-        """
-        correctly_oriented = True
-
-        for robot in self.robots.values():
-            if not robot.correctly_oriented:
-                correctly_oriented = False
-
-        return correctly_oriented
 
     def update_step(self):
         """
@@ -464,6 +281,7 @@ class ArtisticPatternController(Node):
 
         while rclpy.ok():
             if self.all_positions_assigned():
+                self.log_positions()
                 t1 = time.time()
 
                 if not self.targets_assigned():
@@ -507,6 +325,8 @@ def main():
 
     # Initialize target assignement controller
     controller = ArtisticPatternController(robots, goal_positions)
+
+    signal.signal(signal.SIGINT, controller.shutdown_handler)
 
     # Spin in a separate thread
     thread = threading.Thread(target=rclpy.spin, args=(controller, ), daemon=True)
