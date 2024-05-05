@@ -37,8 +37,9 @@ class Solver:
         self.x = [self.opti.variable(3, T+1) for i in range(n)]
         self.u = [self.opti.variable(2, T) for i in range(n)]
 
+
         # define parameters
-        self.distances = [self.opti.variable(n,n) for t in range(T)]
+        #self.distances = [self.opti.variable(n,n) for t in range(T)]
         self.p = [self.opti.parameter(3, 1) for i in range(n)]
         self.x_ref = [self.opti.parameter(3, T+1) for i in range(n)]
         self.u_ref = [self.opti.parameter(2, T) for i in range(n)]
@@ -58,14 +59,9 @@ class Solver:
                 self.opti.subject_to(self.x[i][:, t+1] == x_next)
 
                 # constraint for min distance between two robots
-                # to avoid collisions
-                #for j in range(i+ 1, n): # no need to double the conditions
-                for j in range(0, n): # no need to double the conditions
-                    dist = cas.norm_2(self.x[i][:2,t] - self.x[j][:2,t])
-                    self.opti.subject_to(self.distances[t][i,j] > self.min_dist)
-                    #self.distances[t][i,j] = dist
-                    #distance_violation = cas.fmax(0, self.min_dist - dist)
-                    #self.cost += 1000 * distance_violation ** 2
+                for j in range(i + 1, n):
+                    dist_squared = cas.sumsqr(self.x[i][:2, t] - self.x[j][:2, t])
+                    self.opti.subject_to(dist_squared >= self.min_dist ** 2)
 
             # add constraints in change of velocity
             for t in range(T-1):
@@ -174,7 +170,7 @@ class Solver:
         solver_opts = {
             'ipopt.print_level': 1,
             'print_time': 0,
-            'ipopt.tol': 1e-4
+            'ipopt.tol': 1e-3
         }
 
         self.opti.solver('ipopt', solver_opts)
@@ -184,10 +180,10 @@ class Solver:
             ipdb.set_trace()
             e = e
 
-        #for i in range(self.n):
+        for i in range(self.n):
             # warm start for next iteration
-        #    self.x_init[i] = cas.repmat(self.x[i][:,0], 1, self.T+1)
-        #    self.u_init[i] = cas.repmat(self.u[i][:,0], 1, self.T)
+            self.x_init[i] = cas.repmat(self.x[i][:,0], 1, self.T+1)
+            self.u_init[i] = cas.repmat(self.u[i][:,0], 1, self.T)
 
         # extract first controll input for each robot
         control_inputs = [solution.value(self.u[i])[:,0] for i in

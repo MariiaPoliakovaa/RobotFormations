@@ -265,10 +265,6 @@ class ArtisticPatternController(BaseController):
             odom_msg.twist.twist.linear.y
         )
 
-        # Save initial position
-        if robot.initial_position is None:
-            robot.initial_position = robot.position
-
 
     def run(self):
         # define rate at which to send messages
@@ -281,8 +277,8 @@ class ArtisticPatternController(BaseController):
 
         while rclpy.ok():
             if self.all_positions_assigned():
-                self.log_positions()
                 t1 = time.time()
+                self.log_positions()
 
                 if not self.targets_assigned():
                     self.assign_targets()
@@ -326,6 +322,7 @@ def main():
     # Initialize target assignement controller
     controller = ArtisticPatternController(robots, goal_positions)
 
+    # set signal handler for shutdown
     signal.signal(signal.SIGINT, controller.shutdown_handler)
 
     # Spin in a separate thread

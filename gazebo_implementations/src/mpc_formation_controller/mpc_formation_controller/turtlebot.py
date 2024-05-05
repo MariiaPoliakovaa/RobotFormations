@@ -14,8 +14,14 @@ class MPCTurtleBot:
 
         self.state = None
 
+        self.position = None
+        self.w = None
+
     def set_state(self, x: float, y: float, w: float):
         self.state = [x, y, w]
+
+    def stop_moving(self):
+        pass
 
     def set_target(self, x: float, y: float, w: float):
         """

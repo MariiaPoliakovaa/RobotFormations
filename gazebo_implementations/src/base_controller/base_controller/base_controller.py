@@ -128,7 +128,7 @@ class BaseController(Node):
         """
         positions_set = True
         for robot in self.robots.values():
-            if robot.position is None or robot.initial_position is None:
+            if robot.position is None:
                 positions_set = False
         return positions_set
 
@@ -139,7 +139,6 @@ class BaseController(Node):
         """
         done = True
         for robot_name, robot in self.robots.items():
-            robot_goal = self.robot_goals[robot_name]
             if not robot.reached_target():
                 done = False
         return done
@@ -226,7 +225,6 @@ class BaseController(Node):
             robot.target = None
             robot.stop_moving()
             robot.correctly_oriented = False
-            robot.initial_position = None
         self.targets_set = False
 
     def robots_correctly_oriented(self):

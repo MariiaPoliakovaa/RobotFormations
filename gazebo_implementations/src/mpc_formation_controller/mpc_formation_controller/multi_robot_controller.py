@@ -32,11 +32,13 @@ from tf_transformations import euler_from_quaternion
 
 from typing import List, Dict
 
+from base_controller.base_controller import BaseController
+from turtlebot_controller.turtlebot_controller import Point
 from .turtlebot import MPCTurtleBot as Turtlebot
 from .multi_robot_optimization import Solver
 
 
-class MultiRobotController(Node):
+class MultiRobotController(BaseController):
     def __init__(self,
                  robot_names: List[str],
                  goal_positions: Dict[str, Polygon],
@@ -46,27 +48,10 @@ class MultiRobotController(Node):
         :param goal_positions: goal positions
         :param T             : Forcast horizon
         """
-        super().__init__("multi_robot_mpc_controller")
-        self.turtlebot_radius = 0.07
-        self.max_angular_speed = 0.1
-        self.max_linear_speed = 0.12
-        self.max_delta_velocity = 1.5
-        self.max_delta_omega = np.pi/2
-        self.min_dist = 0.1
-        self.sim_time = 0
-        self.gazebo_real_time_factor = 1
+        super().__init__("mpc_controller", robot_names, goal_positions)
         self.T = T
-        self.dt = None
-        self.dts = []
+        self.min_dist = 0.1 #3 * self.turtlebot_radius
         self.solver = None
-
-        # make an endless cycling iterator for the patterns
-        self.pattern_names = cycle(goal_positions.keys())
-        self.goal_positions = goal_positions
-
-        # make an endless cycling iterator for the patterns
-        self.pattern_names = cycle(goal_positions.keys())
-        self.goal_positions = goal_positions
 
         # init turtlebot objects
         self.robot_names = robot_names
@@ -75,12 +60,6 @@ class MultiRobotController(Node):
                             self.max_angular_speed,
                             self.max_linear_speed
             ) for name in robot_names}
-
-        # init subscriptions
-        self.odom_subscriptions = self.init_odom_subscriptions(robot_names)
-        self.time_subscription = self.init_time_subscription()
-        self.twist_publishers = self.init_twist_publishers(robot_names)
-
 
     def init_mpc_solver(self, dt: float):
         self.solver = Solver(
@@ -94,74 +73,6 @@ class MultiRobotController(Node):
             self.T,
             self.get_logger()
         )
-
-
-    def init_twist_publishers(self, robot_names: List[str]) -> Dict[str, Publisher]:
-        """
-        Initializes the Twist message publisher for each
-        turtlebot.
-
-        :param robot_names : List of names of the turtlebots
-        :returns           : Dictionary with the robot names
-                             as keys and the publishers as values
-        """
-        publishers = {}
-        for robot_name in robot_names:
-            topic_name = f'/{robot_name}/cmd_vel'
-            publisher = self.create_publisher(
-                Twist,
-                topic_name,
-                10
-            )
-            publishers[robot_name] = publisher
-        return publishers
-
-    def init_odom_subscriptions(self, robot_names: List[str]) -> Dict[str, Subscription]:
-        """
-        Initializes the subscriptions to the odometry message
-        for each turtlebot.
-
-        :param robot_names: List of names of the turtlebots
-        :returns           : Dictionary with the robot names
-                             as keys and the subscriptions
-                             as values
-        """
-        subscriptions = []
-
-        # subscribe to odometry messages for each robot
-        for robot_name in self.robot_names:
-            topic_name = f'/{robot_name}/odom'
-            subscription = self.create_subscription(
-                Odometry,
-                topic_name,
-                lambda msg, robot_name=robot_name: self.odom_callback(msg, robot_name),
-                10
-            )
-
-    def init_time_subscription(self):
-        # I need to specifically set the profile, wont work otherwise
-        clock_qos_profile = QoSProfile(
-            reliability=ReliabilityPolicy.BEST_EFFORT,
-            history=HistoryPolicy.KEEP_ALL,
-            durability=DurabilityPolicy.VOLATILE,
-        )
-
-        # subscribe to time message from gazebo
-        time_subscription = self.create_subscription(
-            Clock,
-            '/clock',
-            self.timer_callback,
-            clock_qos_profile
-        )
-
-        return time_subscription
-
-    def timer_callback(self, time_msg):
-        """
-        Computes the real time factor of
-        the gazebo simulation
-        """
-        self.sim_time = time_msg.clock.sec * 1e9 + time_msg.clock.nanosec
 
     def assign_targets(self):
         """
@@ -201,50 +112,6 @@ class MultiRobotController(Node):
                 0 # TODO: implement other angles
             )
 
-    def all_positions_assigned(self):
-        """
-        Returns True if all turtlebots know their
-        positions, else False
-        """
-        positions_set = True
-        for robot in self.robots.values():
-            if robot.state is None:
-                positions_set = False
-        return positions_set
-
-    def targets_assigned(self):
-        """
-        Returns True if all robots have their target assigned,
-        else False
-        """
-        if not self.all_positions_assigned():
-            return
-
-        assigned = True
-        for robot in self.robots.values():
-            if robot.target is None:
-                assigned = False
-        return assigned
-
-    def pattern_achieved(self) -> bool:
-        """
-        Returns True if each robot has reached its goal position,
-        otherwise False
-        """
-        done = True
-        for robot_name, robot in self.robots.items():
-            if not robot.reached_target():
-                done = False
-        return done
-
-    def reset_robots(self):
-        """
-        Unsets the targets for all robots
-        """
-        for robot in self.robots.values():
-            robot.target = None
-        self.targets_set = False
-
     def odom_callback(self, odom_msg: Odometry, robot_name: str):
         """
         The odometry callback updates the current position
@@ -268,6 +135,9 @@ class MultiRobotController(Node):
 
         roll, pitch, yaw = euler_from_quaternion(quaternion)
         w = yaw
+
+        robot.position = Point(x,y)
+        robot.w = w
 
         robot.set_state(x, y, w)
 
@@ -327,6 +197,7 @@ class MultiRobotController(Node):
         while rclpy.ok():
             if self.all_positions_assigned():
                 t1 = time.time()
+                self.log_positions()
 
                 if not self.targets_assigned():
                     self.assign_targets()
@@ -368,6 +239,9 @@ def main():
     # Initialize target assignement controller
     T = 20
     controller = MultiRobotController(robots, goal_positions, T)
+
+    # set signal handler for shutdown
+    signal.signal(signal.SIGINT, controller.shutdown_handler)
 
     # Spin in a separate thread
     thread = threading.Thread(target=rclpy.spin, args=(controller, ), daemon=True)
