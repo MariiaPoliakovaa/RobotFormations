@@ -42,6 +42,7 @@ class BaseController(Node):
         }
         self.positions['timestamp'] = []
         self.positions['pattern'] = []
+        self.positions['real_timestamp'] = []
         self.pattern_name = None
 
         # Simulation time
@@ -78,11 +79,13 @@ class BaseController(Node):
         # remove timestamps and patterns from data
         timestamps = data.pop('timestamp')
         patterns = data.pop('pattern')
+        #collisions = data.pop('collisions')
 
         # construct multi level index
         column_tuples = [(group, col_name) for group in data if group !=
                          'timestamp' for col_name in ['x', 'y', 'w']]
         column_tuples.append(('pattern', 'pattern'))
+        #column_tuples.append((collisions
 
         columns = pd.MultiIndex.from_tuples(
             column_tuples,
@@ -101,7 +104,7 @@ class BaseController(Node):
 
         # set up timing logfile
         current_timestamp = datetime.now().strftime("%Y_%m_%d:%H_%M_%S")
-        timing_file = '{}.csv'.format(current_timestamp)
+        timing_file = '{}_robots.csv'.format(len(self.robots), current_timestamp)
         directory = Path(BASE_DIR, 'timing', self.get_name())
         os.makedirs(directory, exist_ok=True)
         timing_path = Path(directory, timing_file)
@@ -121,8 +124,10 @@ class BaseController(Node):
         positions
         """
         self.positions['timestamp'].append(self.simulation_time)
+        self.positions['real_timestamp'].append(time.time())
         self.positions['pattern'].append(self.pattern_name)
         for robot in self.robots.values():
+            # log robot position
             self.positions[robot.name].append(
                 [
                     robot.position.x,
@@ -130,6 +135,17 @@ class BaseController(Node):
                     robot.w
                 ]
             )
+            # log robot collisions
+            """
+            for other_robot in self.robots.values():
+                collisions = []
+                if robot != other_robot:
+                    if robot.position.distance_to(other_robot) < 2*self.turtlebot_radius:
+                        collisions.append({robot: other_robot})
+                    else:
+                        collisions.append(None)
+                self.collisions.append(json.dumps(collisions)
+            """
 
     def odom_callback(self, odom_msg: Odometry, robot_name: str):
         """

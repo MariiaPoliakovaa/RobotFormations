@@ -34,7 +34,7 @@ class TargetAssignementController(BaseController):
     def __init__(self, robot_names: List[str], goal_positions: Dict[str, list]):
         super().__init__("target_assignement_controller", robot_names,
                          goal_positions)
-        self.deadzone_radius = 5 * self.turtlebot_radius
+        self.deadzone_radius = 0.35
 
         # init turtlebot objects
         self.robot_names = robot_names
@@ -81,7 +81,8 @@ class TargetAssignementController(BaseController):
 
         for other_robot in self.robots.values():
             if robot.in_deadzone(other_robot) and (robot.name != other_robot.name):
-                dist = robot.position.distance_to(other_robot.position)
+                self.get_logger().info(f"{robot.name} in deadzone of\
+                                       {other_robot.name}")
 
                 if robot.priority < other_robot.priority:
                     robot.pause()

@@ -57,21 +57,15 @@ class TargetAssignementTurtlebot(Turtlebot):
         without computing the velocity and using the 
         maximum base speed as we don't need to speed up
         """
-        position = self.position
-
-        # if the robot starts closer than this to the target
-        # reduce its preferred velocity
-        initial_dist_threhold = 1.0
-
         # choose Vp to be the maximal speed
         Vp = self.max_linear_speed
 
-        K = 0.8
+        K = 1.3
 
         # calculate preferred speed
         preferred_speed = Vp * np.min(np.array([
             1,
-            (position.distance_to(self.target) / K)
+            (self.position.distance_to(self.target) / K)
         ]))
 
         return preferred_speed
