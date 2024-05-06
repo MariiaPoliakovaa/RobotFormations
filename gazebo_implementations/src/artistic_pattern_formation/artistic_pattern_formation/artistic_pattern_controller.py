@@ -191,14 +191,13 @@ class ArtisticPatternController(BaseController):
 
             # start moving if all robots are correctly oriented
             if self.robots_correctly_oriented():
-                #self.get_logger().info("Robots correctly oriented")
                 robot.start_moving()
 
             if not robot.run:
                 # rotate robot towards its target
                 twist_msg = robot.rotate_to_target(twist_msg)
             elif robot.reached_target():
-                #self.get_logger().info("Stop moving")
+                # Stop robot if it has reached its target
                 robot.stop_moving()
             else:
                 # get simulation agent
@@ -206,7 +205,6 @@ class ArtisticPatternController(BaseController):
 
                 # get target velocity of agent
                 velocity = self.sim.getAgentVelocity(agent)
-                #self.get_logger().info("Agent velocity: {}".format(str(velocity)))
 
                 # calculate target rotation and speed
                 target_speed = np.sqrt(velocity[0]**2 + velocity[1]**2)
@@ -217,13 +215,6 @@ class ArtisticPatternController(BaseController):
                 rotation_delta = target_rotation - robot_rotation
 
                 angular_vel = robot.angular_speed * rotation_delta/(2*np.pi)
-
-                #self.get_logger().info("------------")
-                #self.get_logger().info("Robot position: ({:.2f}, {:.2f})".format(robot.position.x,robot.position.y))
-                #self.get_logger().info("Robot target: ({:.2f}, {:.2f})".format(robot.target.x,robot.target.y))
-                #self.get_logger().info("Robot rotation: {:.2f}".format(robot_rotation))
-                #self.get_logger().info("Target rotation: {:.2f}".format(target_rotation))
-                #self.get_logger().info("Rotation delta: {:.2f}".format(rotation_delta))
 
                 # set values
                 twist_msg.linear.x = target_speed

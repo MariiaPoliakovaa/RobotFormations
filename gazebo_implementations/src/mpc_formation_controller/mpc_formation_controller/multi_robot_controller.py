@@ -184,7 +184,7 @@ class MultiRobotController(BaseController):
     def run(self):
         # define rate at which to send messages
         update_rate = 3 # /s
-        real_time_factor = 0.05
+        real_time_factor = 0.02
 
         sim_update_rate = update_rate * real_time_factor
 

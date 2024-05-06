@@ -123,7 +123,11 @@ class TargetAssignementController(BaseController):
     def run(self):
         # define rate at which to send messages
         update_rate = 5 # /s
+
+        # set gazebo real time factor
         real_time_factor = 0.3
+
+        # compute update rate
         sim_update_rate = update_rate * real_time_factor
 
         # start rate
