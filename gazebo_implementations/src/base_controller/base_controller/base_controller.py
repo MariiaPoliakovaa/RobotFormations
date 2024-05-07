@@ -43,6 +43,7 @@ class BaseController(Node):
         self.positions['timestamp'] = []
         self.positions['pattern'] = []
         self.positions['real_timestamp'] = []
+        self.positions['td'] = []
         self.pattern_name = None
 
         # Simulation time
@@ -78,14 +79,16 @@ class BaseController(Node):
 
         # remove timestamps and patterns from data
         timestamps = data.pop('timestamp')
+        real_timestamps = data.pop('real_timestamp')
         patterns = data.pop('pattern')
-        #collisions = data.pop('collisions')
+        tds = data.pop('td')
 
         # construct multi level index
         column_tuples = [(group, col_name) for group in data if group !=
                          'timestamp' for col_name in ['x', 'y', 'w']]
         column_tuples.append(('pattern', 'pattern'))
-        #column_tuples.append((collisions
+        column_tuples.append(('real_timestamp', 'real_timestamp'))
+        column_tuples.append(('td', 'td'))
 
         columns = pd.MultiIndex.from_tuples(
             column_tuples,
@@ -97,6 +100,8 @@ class BaseController(Node):
         for val in data.values():
             arrays.append(np.array(val))
         arrays.append(np.array(patterns).reshape(-1,1))
+        arrays.append(np.array(real_timestamps).reshape(-1,1))
+        arrays.append(np.array(tds).reshape(-1,1))
         data_transposed = np.hstack(arrays)
 
         # build dataframe
@@ -118,14 +123,17 @@ class BaseController(Node):
         rclpy.shutdown()
 
 
-    def log_positions(self):
+    def log_positions(self, td: float):
         """
         Save current robot
         positions
+
+        :param td : Time the algorithm took to run
         """
         self.positions['timestamp'].append(self.simulation_time)
         self.positions['real_timestamp'].append(time.time())
         self.positions['pattern'].append(self.pattern_name)
+        self.positions['td'].append(td)
         for robot in self.robots.values():
             # log robot position
             self.positions[robot.name].append(
@@ -135,17 +143,6 @@ class BaseController(Node):
                     robot.w
                 ]
             )
-            # log robot collisions
-            """
-            for other_robot in self.robots.values():
-                collisions = []
-                if robot != other_robot:
-                    if robot.position.distance_to(other_robot) < 2*self.turtlebot_radius:
-                        collisions.append({robot: other_robot})
-                    else:
-                        collisions.append(None)
-                self.collisions.append(json.dumps(collisions)
-            """
 
     def odom_callback(self, odom_msg: Odometry, robot_name: str):
         """

@@ -34,7 +34,7 @@ class TargetAssignementController(BaseController):
     def __init__(self, robot_names: List[str], goal_positions: Dict[str, list]):
         super().__init__("target_assignement_controller", robot_names,
                          goal_positions)
-        self.deadzone_radius = 0.35
+        self.deadzone_radius = 0.3
 
         # init turtlebot objects
         self.robot_names = robot_names
@@ -57,6 +57,7 @@ class TargetAssignementController(BaseController):
         goal_positions = self.goal_positions[self.pattern_name]
 
         # assign targets to the turtlebots
+        # decreasing seems to lead to deadlocks quite often
         prio_direction = 'increasing'
         turtlebots_assigned = target_assignement_strategy(
             turtlebots,
@@ -79,11 +80,18 @@ class TargetAssignementController(BaseController):
         """
         robot.unpause()
 
+        robot.slow_factor = 1
         for other_robot in self.robots.values():
-            if robot.in_deadzone(other_robot) and (robot.name != other_robot.name):
-                self.get_logger().info(f"{robot.name} in deadzone of\
-                                       {other_robot.name}")
+            # check slow zones
+            if robot.in_slowzone(other_robot) and (robot.name != other_robot.name):
+                if robot.priority < other_robot.priority:
+                    robot.slow_factor = (
+                        robot.slow_zone_radius -
+                        robot.position.distance_to(other_robot.position)
+                    ) / robot.slow_zone_radius
 
+            # check deadzones
+            if robot.in_deadzone(other_robot) and (robot.name != other_robot.name):
                 if robot.priority < other_robot.priority:
                     robot.pause()
                 else:
@@ -125,7 +133,7 @@ class TargetAssignementController(BaseController):
         update_rate = 5 # /s
 
         # set gazebo real time factor
-        real_time_factor = 0.3
+        real_time_factor = 1
 
         # compute update rate
         sim_update_rate = update_rate * real_time_factor
@@ -136,7 +144,6 @@ class TargetAssignementController(BaseController):
         while rclpy.ok():
             if self.all_positions_assigned():
                 t1 = time.time()
-                self.log_positions()
 
                 if not self.targets_assigned():
                     self.assign_targets_prios()
@@ -150,6 +157,7 @@ class TargetAssignementController(BaseController):
                 # warn if timing constraint violated
                 t2 = time.time()
                 td = t2 - t1
+                self.log_positions(td)
                 if td > 1/update_rate:
                     self.get_logger().warning("td > update_rate: {:.2f} > 1/{}".format(td, update_rate))
 

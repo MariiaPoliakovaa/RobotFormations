@@ -80,13 +80,13 @@ class Turtlebot:
 
         # calculate how far to move
         angle_difference = angle_to_target - self.w
-        #logger.info("Robot rotation: {:.2f}".format(self.w-np.pi))
+        angular_speed = self.angular_speed * angle_difference/np.pi
+        twist_msg.angular.z = angular_speed
 
         if abs(angle_difference) > self.angle_threshold:
             # reduce angular speed based on angle difference
-            angular_speed = self.angular_speed * angle_difference/np.pi
-            twist_msg.angular.z = angular_speed
             correctly_oriented = False
+            self.stop_moving()
         else:
             correctly_oriented = True
 

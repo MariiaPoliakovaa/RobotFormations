@@ -116,6 +116,7 @@ class Solver:
         Returns:
             cost: CasADi expression representing the cost value
         """
+        epsilon = 1e-4  # A small value to prevent division by zero
         total_cost = 0
         for i in range(self.n):
             # Compute the state part of the cost
@@ -126,6 +127,19 @@ class Solver:
 
             # Total cost
             total_cost += (state_cost + control_cost)
+
+            """
+            for j in range(i + 1, self.n):
+                for t in range(self.T):
+                    pos_i = self.x[i][:2, t]
+                    pos_j = self.x[j][:2, t]
+
+                    # Compute the Euclidean distance between them
+                    distance = cas.sqrt(cas.dot(pos_i - pos_j, pos_i - pos_j))
+
+                    # Add the penalty term to the cost (e.g., inverse of the distance)
+                    total_cost += 1 / (distance + epsilon)
+            """
 
         return total_cost
 

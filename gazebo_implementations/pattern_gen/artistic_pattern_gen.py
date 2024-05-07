@@ -145,11 +145,9 @@ def compare_points(old_points, new_points):
     return True
 
 def goal_generation(polygon, n):
-    # This is very hacky, but I dont know
-    # how to fix the voronoi partition within a polygon.
-    # Whenever there are less voronoi cells than there should be,
-    # restart the computation.
-    # TODO: Fix this shit
+    """
+    Generates n goal position within a polygon
+    """
     error = True
     while error:
         error = False

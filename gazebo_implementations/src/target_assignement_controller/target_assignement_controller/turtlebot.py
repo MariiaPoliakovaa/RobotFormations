@@ -12,6 +12,8 @@ class TargetAssignementTurtlebot(Turtlebot):
         self.priority = None
         self.paused = False
         self.deadzone_radius = deadzone_radius
+        self.slow_zone_radius = 2 * deadzone_radius
+        self.slow_factor = 1
 
     def set_priority(self, prio: float):
         """
@@ -41,12 +43,22 @@ class TargetAssignementTurtlebot(Turtlebot):
         else:
             return False
 
+    def in_slowzone(self, other) -> bool:
+        """
+        Returns True if another turtlebot is within
+        the deadzone radius, else False
+        """
+        if self.position.distance_to(other.position) < self.deadzone_radius:
+            return True
+        else:
+            return False
+
     def set_linear_speed(self, twist_msg):
         """
         Sets the velocity of the turtlebot
         """
         if self.run and not self.paused:
-            twist_msg.linear.x = self.preferred_velocity()
+            twist_msg.linear.x = self.preferred_velocity() * self.slow_factor
         return twist_msg
 
     def preferred_velocity(self):

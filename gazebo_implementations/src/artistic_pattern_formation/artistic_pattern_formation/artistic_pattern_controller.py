@@ -228,7 +228,7 @@ class ArtisticPatternController(BaseController):
     def run(self):
         # define rate at which to send messages
         update_rate = 5 # /s
-        real_time_factor = 0.8
+        real_time_factor = 0.3
         sim_update_rate = update_rate * real_time_factor
 
         # start rate
@@ -237,7 +237,6 @@ class ArtisticPatternController(BaseController):
         while rclpy.ok():
             if self.all_positions_assigned():
                 t1 = time.time()
-                self.log_positions()
 
                 if not self.targets_assigned():
                     self.assign_targets()
@@ -258,6 +257,7 @@ class ArtisticPatternController(BaseController):
                 # warn if timing constraint violated
                 t2 = time.time()
                 td = t2 - t1
+                self.log_positions(td)
                 if td > 1/update_rate:
                     self.get_logger().warning("td > update_rate: {:.2f} > 1/{}".format(td, update_rate))
 

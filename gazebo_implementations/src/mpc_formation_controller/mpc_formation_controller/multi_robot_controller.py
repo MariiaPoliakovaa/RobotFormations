@@ -184,7 +184,7 @@ class MultiRobotController(BaseController):
     def run(self):
         # define rate at which to send messages
         update_rate = 3 # /s
-        real_time_factor = 0.02
+        real_time_factor = 0.1
 
         sim_update_rate = update_rate * real_time_factor
 
@@ -197,7 +197,6 @@ class MultiRobotController(BaseController):
         while rclpy.ok():
             if self.all_positions_assigned():
                 t1 = time.time()
-                self.log_positions()
 
                 if not self.targets_assigned():
                     self.assign_targets()
@@ -211,6 +210,7 @@ class MultiRobotController(BaseController):
                 t2 = time.time()
                 td = t2 - t1
                 self.get_logger().info("td: {:.2f}".format(td))
+                self.log_positions(td)
                 if td > 1/sim_update_rate:
                     self.get_logger().warning(
                         "td > update_rate: {:.2f} > {:.2f}".format(
