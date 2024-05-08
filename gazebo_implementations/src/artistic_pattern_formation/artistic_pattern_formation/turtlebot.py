@@ -74,7 +74,7 @@ class ArtisticTurtleBot(Turtlebot):
             # reduce angular speed based on angle difference
             angular_speed = self.angular_speed * angle_difference/np.pi
             twist_msg.angular.z = angular_speed
-            correctly_oriented = False
+            self.run = True
         else:
             correctly_oriented = True
 

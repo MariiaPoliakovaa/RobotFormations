@@ -68,7 +68,7 @@ class ArtisticPatternController(BaseController):
         self.get_logger().info("Initializing simulation")
 
         # Define variables for simulation
-        max_neighbor_dist = 2 * self.turtlebot_radius
+        max_neighbor_dist = 2.5
         # NOTE: We can probably equal max_neighbors to the number of robots, 
         # the RVO2 simulation should not be the bottleneck
         time_step = 1/update_rate
@@ -228,7 +228,7 @@ class ArtisticPatternController(BaseController):
     def run(self):
         # define rate at which to send messages
         update_rate = 5 # /s
-        real_time_factor = 0.3
+        real_time_factor = 0.4
         sim_update_rate = update_rate * real_time_factor
 
         # start rate
