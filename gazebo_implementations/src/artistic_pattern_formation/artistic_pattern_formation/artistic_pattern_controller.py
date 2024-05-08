@@ -228,7 +228,7 @@ class ArtisticPatternController(BaseController):
     def run(self):
         # define rate at which to send messages
         update_rate = 5 # /s
-        real_time_factor = 0.4
+        real_time_factor = 0.8
         sim_update_rate = update_rate * real_time_factor
 
         # start rate

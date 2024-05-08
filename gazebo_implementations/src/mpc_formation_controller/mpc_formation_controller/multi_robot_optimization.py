@@ -98,7 +98,8 @@ class Solver:
             self.opti.set_initial(self.u[i], self.u_init[i])
 
         # set paper values
-        self.opti.set_value(self.Q, cas.diag(cas.vertcat([1.0, 5.0, 0.5])))
+        self.opti.set_value(self.Q, cas.diag(cas.vertcat([1.0, 5.0, 0])))
+        #self.opti.set_value(self.R, cas.diag(cas.vertcat([0.5, 0.25])))
         self.opti.set_value(self.R, cas.diag(cas.vertcat([0.5, 0.25])))
 
     def cost_function(self, x, u, x_ref, u_ref, Q, R) -> float:
