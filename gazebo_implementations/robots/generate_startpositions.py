@@ -19,7 +19,7 @@ if __name__ == "__main__":
     grid_width = 4
     grid_height = 5
 
-    for i in range(30):
+    for i in range(40):
         i += 1
         robots = generate_robots_grid(i, grid_width, grid_height)
 
