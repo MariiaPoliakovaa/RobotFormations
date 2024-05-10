@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-05-10T23:14:41.614Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="6vtDq_J03sQBPqQglU3o" version="24.4.0" type="github">
+<mxfile host="app.diagrams.net" modified="2024-05-10T23:28:55.127Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="lUlAfiEZuXxZzWb0w5rx" version="24.4.0" type="github">
   <diagram name="Page-1" id="-YdvRIkgb-Ix6eBn7Qun">
     <mxGraphModel dx="1364" dy="756" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -220,7 +220,7 @@
         <mxCell id="oA53izFjePRERUv0HSkR-4" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="275" y="640" width="50" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="oA53izFjePRERUv0HSkR-5" value="Roboter zum Ziel ausgerichtet?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="oA53izFjePRERUv0HSkR-5" value="Alle Roboter zum Ziel ausgerichtet?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="140" y="650" width="150" height="30" as="geometry" />
         </mxCell>
         <mxCell id="oA53izFjePRERUv0HSkR-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="KeHFVnASxPyX6TPpp1vY-46" target="KeHFVnASxPyX6TPpp1vY-50">
