@@ -68,6 +68,6 @@ def main(n:int):
 
 
 if __name__ == '__main__':
-    for num_robots in range(40, 41):
+    for num_robots in range(50, 51):
         main(num_robots)
 
