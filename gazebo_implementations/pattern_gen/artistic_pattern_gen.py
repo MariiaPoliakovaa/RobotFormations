@@ -136,7 +136,7 @@ def cell_polygons(points, shape):
     return cells
 
 def compare_points(old_points, new_points):
-    max_delta = 0.001
+    max_delta = 0.0001
 
     for i in range(len(old_points)):
         delta = np.sqrt((old_points[i,0] - new_points[i,0])**2 + (old_points[i,1] - new_points[i,1])**2)
