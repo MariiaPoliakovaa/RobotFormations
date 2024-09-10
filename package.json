@@ -1,0 +1,8 @@
+{
+  "name": "robotformation",
+  "version": "1.0.1",
+  "scripts": {
+    "commit": "git-cz",
+    "release": "standard-version"
+  }
+}
