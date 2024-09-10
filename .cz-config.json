@@ -1,0 +1,15 @@
+module.exports = {
+  types: [
+    { value: 'feat', name: 'feat:     A new feature' },
+    { value: 'fix', name: 'fix:      A bug fix' },
+    { value: 'docs', name: 'docs:     Documentation only changes' },
+    { value: 'style', name: 'style:    Code style improvements (formatting, no logic changes)' },
+    { value: 'refactor', name: 'refactor: A code change that doesn’t fix a bug or add a feature' },
+    { value: 'test', name: 'test:     Adding or correcting tests' },
+    { value: 'chore', name: 'chore:    Changes to the build process or tools' }
+  ],
+  scopes: [],
+  allowCustomScopes: true,
+  allowBreakingChanges: ['feat', 'fix'],
+};
+

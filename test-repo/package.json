@@ -1,0 +1,17 @@
+{
+  "name": "test-repo",
+  "version": "1.0.0",
+  "scripts": {
+    "commit": "git-cz"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-git"
+    }
+  },
+  "devDependencies": {
+    "cz-git": "^1.0.0",
+    "commitizen": "^4.2.3"
+  }
+}
+
